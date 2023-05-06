@@ -40,3 +40,33 @@ class AStrat(IStrat):
         self.included_columns = self.db.retrieve("included_columns").tail(1)["included_columns"].item()
         self.db.disconnect()
     
+    def pull_training_data(self):
+        self.db.connect()
+        data = self.db.retrieve("data")
+        self.db.disconnect()
+        return data
+    
+    def pull_recommend_data(self):
+        self.db.connect()
+        data = self.db.retrieve("recommend_data")
+        self.db.disconnect()
+        return data
+    
+    def pull_recs(self,modeler_type):
+        self.db.connect()
+        data = self.db.retrieve(f"{modeler_type}_recs")
+        self.db.disconnect()
+        return data
+    
+    def pull_models(self,modeler_type):
+        self.db.connect()
+        data = self.db.retrieve(f"{modeler_type}_models")
+        self.db.disconnect()
+        return data
+    
+    def pull_unmodeled(self):
+        self.db.connect()
+        data = self.db.retrieve("unmodeled")
+        self.db.disconnect()
+        return data
+    

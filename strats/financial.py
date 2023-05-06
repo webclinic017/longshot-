@@ -2,6 +2,7 @@ from strats.astrat import AStrat
 from database.adatabase import ADatabase
 from datetime import datetime
 from processor.processor import Processor as p
+import pandas as pd
 class Financial(AStrat):
     
     def __init__(self,training_year):
@@ -21,54 +22,86 @@ class Financial(AStrat):
             return current_quarter != purchase_quarter
         else:
             return False
-
-    def transform(self,sp500,market,sec,ticker):
-        row = sp500[sp500["Symbol"]==ticker]
-        cik = int(row["CIK"])
-        sec.connect()
-        filing_data = sec.retrieve_filing_data(cik)
-        sec.disconnect()
-        filing_data["date"] = [datetime.strptime(str(x),"%Y%m%d") for x in filing_data["filed"]]
-        filing_data = p.column_date_processing(filing_data)
-        filing_data["ticker"] = ticker
-        market.connect()
-        prices = market.retrieve_ticker_prices("prices",ticker)
-        market.disconnect()
-        prices = p.column_date_processing(prices)
-        prices.sort_values("date",inplace=True)
-        prices = prices.groupby(["year","quarter"]).mean().reset_index()
-        filing_data = filing_data.merge(prices,on=["year","quarter"],how="left")
-        filing_data["y"] = filing_data['adjclose'].shift(-1)
-        complete = filing_data[self.included_columns].fillna(method="bfill").fillna(method="ffill").groupby(["year","quarter","ticker"]).mean().reset_index()
-        return complete
     
-    def recommend_transform(self,recs,sp500,market,sec,ticker):
-        if "year" not in recs.columns:
-            start_year = datetime.now().year - 1
-            start_quarter = 4
-        else:
-            start_year = recs["year"].max().year
-            start_quarter = recs["quarter"].max() + 1
-        row = sp500[sp500["Symbol"]==ticker]
-        cik = int(row["CIK"])
-        sec.connect()
-        filing_data = sec.retrieve_filing_data(cik)
-        sec.disconnect()
-        filing_data["date"] = [datetime.strptime(str(x),"%Y%m%d") for x in filing_data["filed"]]
-        filing_data = p.column_date_processing(filing_data)
-        filing_data["ticker"] = ticker
+    def daily_rec(self,iterration_sim,date,current_tickers,parameter):
+        signal = parameter["signal"]
+        todays_recs = iterration_sim[(iterration_sim["date"]==date) & (~iterration_sim["ticker"].isin(current_tickers))]
+        todays_recs = todays_recs[(todays_recs["delta"] >= signal)].sort_values("delta",ascending=False)   
+        return todays_recs
+
+    def transform(self,market,sec):
+        data = self.pull_training_data()
         market.connect()
-        prices = market.retrieve_ticker_prices("prices",ticker)
+        sp500 = market.retrieve("sp500")
         market.disconnect()
-        prices = p.column_date_processing(prices)
-        prices.sort_values("date",inplace=True)
-        prices = prices.groupby(["year","quarter"]).mean().reset_index()
-        filing_data = filing_data.merge(prices,on=["year","quarter"],how="left")
-        filing_data.reset_index(inplace=True,drop=True)
-        starting_index = filing_data[(filing_data["year"]==start_year) & (filing_data["quarter"]==start_quarter)].index.values[0]
-        filing_data = filing_data.iloc[starting_index:]
-        complete = filing_data[[x for x in self.included_columns if x != "y"]].fillna(method="bfill").fillna(method="ffill").groupby(["year","quarter","ticker"]).mean().reset_index()
-        return complete
+        self.db.connect()
+        sp500 = sp500.rename(columns={"Symbol":"ticker"})
+        if data.index.size < 1:
+            for ticker in sp500["ticker"].unique():
+                try:
+                    row = sp500[sp500["ticker"]==ticker]
+                    cik = int(row["CIK"])
+                    sec.connect()
+                    filing_data = sec.retrieve_filing_data(cik)
+                    sec.disconnect()
+                    filing_data["date"] = [datetime.strptime(str(x),"%Y%m%d") for x in filing_data["filed"]]
+                    filing_data = p.column_date_processing(filing_data)
+                    filing_data["ticker"] = ticker
+                    market.connect()
+                    prices = market.retrieve_ticker_prices("prices",ticker)
+                    market.disconnect()
+                    prices = p.column_date_processing(prices)
+                    prices.sort_values("date",inplace=True)
+                    prices = prices.groupby(["year","quarter"]).mean().reset_index()
+                    filing_data = filing_data.merge(prices,on=["year","quarter"],how="left")
+                    filing_data["y"] = filing_data['adjclose'].shift(-1)
+                    complete = filing_data.fillna(method="bfill").fillna(method="ffill").groupby(["year","quarter","ticker"]).mean().reset_index()
+                    complete = complete.merge(sp500[["ticker","GICS Sector","GICS Sub-Industry"]],on="ticker",how="left")[self.included_columns]
+                    self.db.store("data",complete)
+                except Exception as e:
+                    self.db.store("unmodeled",pd.DataFrame([{"ticker":ticker,"error":str(e)}]))
+        self.db.disconnect()
+    
+    def recommend_transform(self,market,sec):
+        unmodeled = self.pull_unmodeled()
+        recs = self.pull_recommend_data()
+        market.connect()
+        sp500 = market.retrieve("sp500")
+        market.disconnect()
+        sp500 = sp500.rename(columns={"Symbol":"ticker"})
+        if recs.index.size < 1:
+            for ticker in sp500["ticker"].unique():
+                try:
+                    if ticker not in unmodeled["ticker"].unique():
+                        if "year" not in recs.columns:
+                            start_year = datetime.now().year - 1
+                            start_quarter = 4
+                        else:
+                            start_year = recs["year"].max().year
+                            start_quarter = recs["quarter"].max() + 1
+                        row = sp500[sp500["ticker"]==ticker]
+                        cik = int(row["CIK"])
+                        sec.connect()
+                        filing_data = sec.retrieve_filing_data(cik)
+                        sec.disconnect()
+                        filing_data["date"] = [datetime.strptime(str(x),"%Y%m%d") for x in filing_data["filed"]]
+                        filing_data = p.column_date_processing(filing_data)
+                        filing_data["ticker"] = ticker
+                        market.connect()
+                        prices = market.retrieve_ticker_prices("prices",ticker)
+                        market.disconnect()
+                        prices = p.column_date_processing(prices)
+                        prices.sort_values("date",inplace=True)
+                        prices = prices.groupby(["year","quarter"]).mean().reset_index()
+                        filing_data = filing_data.merge(prices,on=["year","quarter"],how="left")
+                        filing_data.reset_index(inplace=True,drop=True)
+                        starting_index = filing_data[(filing_data["year"]==start_year) & (filing_data["quarter"]==start_quarter)].index.values[0]
+                        filing_data = filing_data.iloc[starting_index:]
+                        complete = filing_data.fillna(method="bfill").fillna(method="ffill").groupby(["year","quarter","ticker"]).mean().reset_index()
+                        complete = complete.merge(sp500[["ticker","GICS Sector","GICS Sub-Industry"]],on="ticker",how="left")[[x for x in self.included_columns if x != "y"]]
+                        self.db.store("recommend_data",complete)
+                except:
+                    continue
 
     def training_set(self,filings,year):
         return filings[(filings["year"]>=year-self.training_year) & (filings["year"]<year)][self.included_columns].reset_index(drop=True)
@@ -76,13 +109,22 @@ class Financial(AStrat):
     def prediction_set(self,filings,year):
         return filings[(filings["year"]==year)].reset_index(drop=True)
     
-    def recommend_set(self,recs,filing_data):
-        if "year" not in recs.columns:
-            start_year = datetime.now().year - 1
-            start_quarter = 4   
-        else:
-            start_year = recs["year"].max()
-            start_quarter = recs["quarter"].max() + 1
+    def recommend_set(self,model_type):
+        filing_data = self.pull_recommend_data()
+        recs = self.pull_recs(model_type)
+        start_quarter = 4
+        start_year = 2022
+        # if "year" not in recs.columns:
+        #     start_year = datetime.now().year - 1
+        #     start_quarter = 4   
+        # else:
+        #     start_year = recs["year"].max()
+        #     if recs["quarter"].max() == 4:
+        #         start_quarter = 1
+        #         start_year = recs["year"].max() + 1
+        #     else:
+        #         start_quarter = recs["quarter"].max() + 1
+        # print(filing_data["year"].max(), filing_data["quarter"].max())
         filing_data.reset_index(inplace=True,drop=True)
         starting_index = filing_data[(filing_data["year"]==start_year) & (filing_data["quarter"]==start_quarter)].index.values[0]
         filing_data = filing_data.iloc[starting_index:].dropna()
@@ -100,10 +142,10 @@ class Financial(AStrat):
         return prediction_set[included_cols]
     
     def create_sim(self,prices,simulation):
-        simulation["year"] = [int(x) for x in simulation["year"]]
-        sim = prices.copy().merge(simulation[(simulation["training_year"]==self.training_year)],on=["year","quarter","ticker"],how="left")
+        sim = prices.copy().merge(simulation,on=["year","quarter","ticker"],how="left")
+        print(sim.columns)
         sim = sim.dropna()
-        sim = sim.groupby(["date","ticker"]).mean().reset_index()
+        sim = sim.groupby(["year","date","ticker","GICS Sector","GICS Sub-Industry"]).mean().reset_index()
         sim["prediction"] = (sim["xgb_prediction"] + sim["skl_prediction"] + sim["cat_prediction"]) / 3
         sim["delta"] = (sim["prediction"] - sim["adjclose"]) / sim["adjclose"]
         sim["model_delta"] = sim["prediction"].pct_change()
@@ -119,4 +161,4 @@ class Financial(AStrat):
         sim["prediction"] = (sim["xgb_prediction"] + sim["skl_prediction"] + sim["cat_prediction"]) / 3
         sim["delta"] = (sim["prediction"] - sim["adjclose"]) / sim["adjclose"]
         sim["model_delta"] = sim["prediction"].pct_change()
-        return sim[sim["date"]==today].groupby(["date","ticker"]).mean().reset_index()
+        return sim[sim["date"]==today].groupby(["date","ticker","GICS Sector","GICS Sub-Industry"]).mean().reset_index()

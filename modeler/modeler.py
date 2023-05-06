@@ -15,6 +15,12 @@ from xgboost.sklearn import XGBClassifier
 from xgboost.training import train
 from catboost import CatBoostRegressor, CatBoostClassifier
 from lightgbm import LGBMRegressor, LGBMClassifier, early_stopping, log_evaluation
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.losses import MeanSquaredError, BinaryCrossentropy
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.metrics import MeanAbsolutePercentageError
+from tensorflow.nn import sigmoid
 import warnings
 warnings.filterwarnings(action='ignore')
 
@@ -26,9 +32,19 @@ class Modeler(object):
         for row in models.iterrows():
             try:
                 model = row[1]["model"]
+                model_type = row[1]["model_type"]
                 api = row[1]["api"]
                 score = row[1]["score"]
-                prediction_set[f"{api}_prediction"] = model.predict(prediction_set[factors])
+                if api == "tf":
+                    if model_type == "classification":
+                        predictions = model.predict(prediction_set[factors])
+                        predictions = sigmoid(predictions)
+                        prediction_set[f"{api}_prediction"] = [int(x[0].numpy() > 0.5) for x in predictions]
+                    else:
+                        predictions = model.predict(prediction_set[factors])
+                        prediction_set[f"{api}_prediction"] = [x[0] for x in predictions]
+                else:
+                    prediction_set[f"{api}_prediction"] = model.predict(prediction_set[factors])
                 prediction_set[f"{api}_score"] = score 
             except Exception as e:
                 print(str(e))
@@ -37,11 +53,12 @@ class Modeler(object):
     @classmethod
     def classification(self,data,multioutput):
         results = []
-        sk_result = self.sk_classify(data,multioutput)
-        results.append(sk_result)
+        # sk_result = self.sk_classify(data,multioutput)
+        # results.append(sk_result)
         xgb_result = self.xgb_classify(data,multioutput)
         results.append(xgb_result)
         results.append(self.cat_classify(data,multioutput))
+        results.append(self.tf_classify(data,multioutput))
         df = pd.DataFrame(results)
         df["model_type"] = "classification"
         return df
@@ -49,11 +66,12 @@ class Modeler(object):
     @classmethod
     def regression(self,data):
         results = []
-        sk_result = self.sk_regression(data)
-        results.append(sk_result)
+        # sk_result = self.sk_regression(data)
+        # results.append(sk_result)
         xgb_result = self.xgb_regression(data)
         results.append(xgb_result)
         results.append(self.cat_regression(data))
+        results.append(self.tf_regression(data))
         df = pd.DataFrame(results)
         df["model_type"] = "regression"
         return df
@@ -108,6 +126,27 @@ class Modeler(object):
             score = r2_score(predictions,y_test)
             model = gs.best_estimator_
             return {"api":"cat","model":model,"score":score}
+        except Exception as e:
+            print(str(e))
+            return {"api":"cat","model":str(e),"score":-99999}
+    
+    @classmethod
+    def tf_regression(self,data):
+        try: 
+            lstm_model = Sequential([
+                Dense(units=64, activation='relu'),
+                Dense(units=64, activation='relu'),
+                Dense(units=1)
+            ])
+            lstm_model.compile(loss=MeanSquaredError(),
+                optimizer=Adam(),
+                metrics=[MeanAbsolutePercentageError()])
+            X_train, X_test, y_train, y_test = self.shuffle_split(data)
+            lstm_model.fit(x=X_train,y=y_train,epochs=10)
+            predictions = lstm_model.predict(X_test)
+            predictions = [x[0] for x in predictions]
+            score = r2_score(predictions,y_test)
+            return {"api":"tf","model":lstm_model,"score":score}
         except Exception as e:
             print(str(e))
             return {"api":"cat","model":str(e),"score":-99999}
@@ -216,7 +255,31 @@ class Modeler(object):
         except Exception as e:
             print(str(e))
             return {"api":"xgb","model":str(e),"score":-99999}
-
+        
+    @classmethod
+    def tf_classify(self,data,multioutput):
+        try:
+            X_train, X_test, y_train, y_test = self.shuffle_split(data)
+            classification_model = Sequential([
+                Dense(32, activation='relu'),
+                Dropout(0.5),
+                Dense(units=1)
+            ])
+            classification_model.compile(loss=BinaryCrossentropy(from_logits=True),
+                optimizer=Adam(),
+                metrics=["accuracy"])
+            y_train = LabelEncoder().fit(y_train).transform(y_train)
+            classification_model.fit(x=X_train,y=y_train,epochs=10)
+            y_test = LabelEncoder().fit(y_test).transform(y_test)
+            predictions = classification_model.predict(X_test)
+            predictions = sigmoid(predictions)
+            predictions = [x[0].numpy() > 0.5 for x in predictions]
+            score = accuracy_score(predictions,y_test)
+            return {"api":"tf","model":classification_model,"score":score}
+        except Exception as e:
+            print(str(e))
+            return {"api":"tf","model":str(e),"score":-99999}
+        
     @classmethod
     def sk_classify(self,data,multioutput):
         results = []

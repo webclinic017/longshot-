@@ -6,10 +6,10 @@ class Backtester(object):
         self.end_date = end_date
         self.portfolio = portfolio
         self.initial = initial
-        self.values = [True]
+        self.values = [True,False]
         self.ocs = [False]
-        self.reqs = [0.05,0.15,0.3]
-        self.signals = [0.05,0.15,0.3]
+        self.reqs = [0.05,0.1,0.15]
+        self.signals = [0.05,0.1,0.15]
 
     def reqs_init(self,reqs):
         self.reqs = reqs

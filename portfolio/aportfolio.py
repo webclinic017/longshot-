@@ -4,15 +4,18 @@ import pickle
 from datetime import datetime, timedelta
 from modeler.modeler import Modeler as m
 import pandas as pd
+from factory.buy_factory import BuyFactory as buyfact
+from factory.queue_factory import QueueFactory as queuefact
+from factory.sell_factory import SellFactory as sellfact
 
 class APortfolio(object):
     
-    def __init__(self,strat_class,positions,state):
-        self.strat_class = strat_class
-        self.positions = positions
+    def __init__(self,strat_class,modeler_class,diversifier_class,positions,state):
         self.state = state
-        self.db = ADatabase(f"{self.state.value}_{self.strat_class.name}")
-    
+        self.strat_class = strat_class
+        self.modeler_class = modeler_class
+        self.diversifier_class = diversifier_class
+        self.positions = self.diversifier_class.positions()
     def db_subscribe(self):
         self.db.connect()
     
@@ -38,6 +41,15 @@ class APortfolio(object):
         portfolios = self.db.retrieve(f"portfolios")
         return portfolios
     
+    def drop_trades(self):
+        trades = self.db.drop(f"trades")
+        return trades
+    
+    def drop_portfolios(self):
+        portfolios = self.db.drop(f"portfolios")
+        return portfolios
+    
+
     def pull_portfolio_max_date(self):
         date_range = self.db.retrieve_collection_date_range(f"portfolios")
         if date_range.index.size < 1:
@@ -55,116 +67,116 @@ class APortfolio(object):
         return max_date
 
     def pull_parameters(self):
-        backtest_db = ADatabase(f"backtest_{self.strat_class.name}")
+        backtest_db = ADatabase(f"universal_{self.strat_class.name}_{self.modeler_class.name}_{self.diversifier_class.name}_backtest")
         backtest_db.connect()
         optimal_parameters = backtest_db.retrieve("optimal_parameters")
         backtest_db.disconnect()
-        return optimal_parameters.iloc[0]
-    
-    def transform(self,market,sec):
-        market.connect()
-        sp500 = market.retrieve("sp500")
-        market.disconnect()
-        tickers = list(sp500["Symbol"].unique())
-        self.db.connect()
-        for ticker in tickers:
-            try:
-                data = self.strat_class.transform(sp500,market,sec,ticker)
-                self.db.store("data",data)
-            except Exception as e:
-                self.db.store("unmodeled",pd.DataFrame([{"ticker":ticker,"error":str(e)}]))
-                continue
-        self.db.disconnect()
-        
-    def pull_training_data(self):
-        self.db.connect()
-        data = self.db.retrieve("data")
-        self.db.disconnect()
-        return data
-    
-    def pull_recommend_data(self):
-        self.db.connect()
-        data = self.db.retrieve("recommend_data")
-        self.db.disconnect()
-        return data
+        return optimal_parameters
     
     def pull_recs(self):
         self.db.connect()
         data = self.db.retrieve("recs")
         self.db.disconnect()
         return data
-    
-    def pull_unmodeled(self):
-        self.db.connect()
-        data = self.db.retrieve("unmodeled")
-        self.db.disconnect()
-        return data
 
-    def model(self,start_year,end_year):
-        self.db.connect()
-        for year in range(start_year,int(end_year)):
-            try:
-                data = self.pull_training_data()
-                training_set = self.strat_class.training_set(data,year)
-                training_set = training_set.sample(frac=1)
-                prediction_set = self.strat_class.prediction_set(data,year)
-                refined = {"X":training_set[self.strat_class.factors],"y":training_set["y"]}
-                models = m.regression(refined)
-                prediction_set = m.predict(models,prediction_set,self.strat_class.factors)
-                prediction_set = self.strat_class.prediction_clean(prediction_set)
-                self.db.store("sim",prediction_set)
-            except Exception as e:
-                print(str(e))
-                continue
-        self.db.disconnect()
-    
-    def recommend_transform(self,market,sec):
-        market.connect()
-        sp500 = market.retrieve("sp500")
-        market.disconnect()
-        tickers = list(sp500["Symbol"].unique())
-        unmodeled = self.pull_unmodeled()
-        recs = self.pull_recs()
-        if unmodeled.index.size < 1:
-            defunct = []
+    def exit_clause(self,position_dictionary,req):
+        if len(position_dictionary["asset"].keys()) > 0:
+            asset_dictionary = position_dictionary["asset"]
+            current_price = asset_dictionary["adjclose"]
+            buy_price = asset_dictionary["buy_price"]
+            current_gain = (current_price - buy_price) / buy_price
+            return current_gain >= req
         else:
-            defunct = list(unmodeled["ticker"].unique())
-        self.db.connect()
-        for ticker in tickers:
-            if ticker not in defunct:
+            return False
+    
+    def swap_clause(self,offerings,position_dictionary,signal,position):
+        asset_dictionary = position_dictionary["asset"]
+        if len(asset_dictionary.keys()) > 0 and offerings.index.size > position:
+            offering = offerings.iloc[position]
+            current_price = asset_dictionary["adjclose"]
+            buy_price = asset_dictionary["buy_price"]
+            current_gain = (current_price - buy_price) / buy_price
+            return (current_gain > 0) and (offering["delta"] > (asset_dictionary["projected_delta"] - current_gain)) and (offering["delta"] >= signal)
+        else:
+            return False
+    
+    def queue_clause(self,position_dictionary,todays_recs):
+        return (len(position_dictionary["asset"].keys()) == 0) and (todays_recs.index.size > 0)
+    
+    def entry_clause(self,date,position_dictionary,prices):
+        if len(position_dictionary["queue"].keys())>0 and len(position_dictionary["asset"].keys()) == 0:
+            purchase_dictionary = position_dictionary["queue"]
+            entry_price = purchase_dictionary["adjclose"]
+            ticker = purchase_dictionary["ticker"]
+            price_data = prices[(prices["ticker"]==ticker) & (prices["date"]==date)]
+            if price_data.index.size > 0:
+                high = price_data["high"].iloc[0].item()
+                low = price_data["low"].iloc[0].item()
+                return entry_price <= high and entry_price >= low
+        return False
+        
+    def exit(self,date,position_dictionary,parameter,position):
+        if self.exit_clause(position_dictionary,parameter["req"]) or self.strat_class.exit_clause(date,position_dictionary):
+            asset_dictionary = position_dictionary["asset"]
+            trade = sellfact.sell_record(asset_dictionary,date,position,parameter)
+            trade["strategy"] = self.strat_class.name
+            position_dictionary = portutil.exit(position_dictionary)
+        else:
+            trade = {}
+        return {"dictionary":position_dictionary,"trade":trade}
+
+    def swap(self,date,position_dictionary,offerings,parameter,position):
+        if self.swap_clause(offerings,position_dictionary,parameter["signal"],position) and self.strat_class.offering_clause(date):    
+            asset_dictionary = position_dictionary["asset"]
+            trade = sellfact.sell_record(asset_dictionary,date,position,parameter)
+            position_dictionary = portutil.exit(position_dictionary)
+            purchase_dictionary = queuefact.queue_record(position_dictionary,offerings.iloc[position],swap=True)
+            position_dictionary["queue"] = purchase_dictionary
+        else:
+            trade = {}
+        return {"dictionary":position_dictionary,"trade":trade}
+
+    def entry(self,date,position_dictionary,daily_prices):
+        if self.entry_clause(date,position_dictionary,daily_prices):
+            purchase_dictionary = buyfact.buy_record(date,position_dictionary["queue"])
+            position_dictionary = portutil.entry(position_dictionary,purchase_dictionary)
+        else:
+            position_dictionary["queue"] = {}
+        return position_dictionary
+
+    def queue(self,date,position_dictionary,offerings):
+        if self.queue_clause(position_dictionary,offerings) and self.strat_class.offering_clause(date):
+            purchase_dictionary = queuefact.queue_record(position_dictionary,offerings.iloc[0],swap=False)
+            position_dictionary["queue"] = purchase_dictionary
+        return position_dictionary
+    
+    def daily_iterration(self,iterration_sim,date,prices,parameter):
+        daily_prices = prices[prices["date"]==date]
+        portfolio = self.portfolio_state
+        portfolio["date"] = date
+        current_tickers = portutil.current_ticker_list(portfolio)
+        if daily_prices.index.size > 0:
+            portfolio = portutil.asset_updates(portfolio,daily_prices)
+            for position in range(self.positions):
+                current_tickers = portutil.current_ticker_list(portfolio)
+                position_dictionary = portfolio["positions"][position]       
+                exit_dictionary = self.exit(date,position_dictionary,parameter,position)
+                position_dictionary = exit_dictionary["dictionary"]
+                trade = exit_dictionary["trade"]
+                if len(trade.keys()) > 0:
+                    self.db.store(f"trades",pd.DataFrame([trade]))
+                portfolio["positions"][position] = position_dictionary
+                current_tickers = portutil.current_ticker_list(portfolio)
+                position_dictionary = self.entry(date,position_dictionary,daily_prices)  
+                offerings =  self.strat_class.daily_rec(iterration_sim,date,current_tickers,parameter)
                 try:
-                    data = self.strat_class.recommend_transform(recs,sp500,market,sec,ticker)
-                    self.db.store("recommend_data",data)
+                    offerings = self.diversifier_class.diversify(offerings,position)
+                    position_dictionary = self.queue(date,position_dictionary,offerings)
+                    portfolio["positions"][position] = position_dictionary
+                    current_tickers = portutil.current_ticker_list(portfolio)
                 except Exception as e:
                     continue
-        self.db.disconnect()
-
-    def recommend_model(self,start_year,end_year):
-        self.db_subscribe()
-        for year in range(start_year,int(end_year)):
-            try:
-                data = self.pull_training_data()
-                training_set = self.strat_class.training_set(data,year)
-                training_set = training_set.sample(frac=1)
-                refined = {"X":training_set[self.strat_class.factors],"y":training_set["y"]}
-                models = m.regression(refined)
-                models["year"] = year
-                models["training_year"] = self.strat_class.training_year
-                models["model"] = [pickle.dumps(x) for x in models["model"]]
-                self.db.store("models",models)
-            except Exception as e:
-                print(str(e))
-                continue
-        self.db_subscribe()
-    
-    def recommend(self):
-        self.db_subscribe()
-        models = self.db.retrieve("models")
-        recs = self.pull_recs()
-        data = self.pull_recommend_data()
-        models["model"] = [pickle.loads(x) for x in models["model"]]
-        prediction_set = self.strat_class.recommend_set(recs,data)
-        prediction_set = m.predict(models,prediction_set,self.strat_class.factors)
-        prediction_set = self.strat_class.prediction_clean(prediction_set)
-        self.db.store("recs",prediction_set)
-        self.db_unsubscribe()
+        portfolio["positions"] = pickle.dumps(portfolio["positions"])
+        self.db.store(f"portfolios",pd.DataFrame([portfolio]))
+        portfolio["positions"] = pickle.loads(portfolio["positions"])
+        self.portfolio_state = portfolio

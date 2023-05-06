@@ -16,5 +16,5 @@ class Processor(object):
                 data["date"] = pd.to_datetime(data["date"]).dt.tz_localize(None)
             data["year"] = data["date"].dt.year
             data["quarter"] = data["date"].dt.quarter
-            data["week"] = data["date"].dt.week
+            data["week"] = data["date"].dt.isocalendar().week
         return data
