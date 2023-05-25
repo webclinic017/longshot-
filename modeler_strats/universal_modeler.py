@@ -6,11 +6,14 @@ class UniversalModeler(object):
     def __init__(self):
         self.name = "universal"
     
-    def model(self,training_set,prediction_set,factors):
+    def model(self,training_set,prediction_set,factors,tf):
         refined = {"X":training_set[factors],"y":training_set["y"]}
-        models = m.regression(refined)
+        models = m.regression(refined,tf)
         prediction_set = m.predict(models,prediction_set,factors)
-        prediction_set["prediction"] = (prediction_set["cat_prediction"] + prediction_set["xgb_prediction"] + prediction_set["tf_prediction"]) / 3
+        if tf:
+            prediction_set["prediction"] = (prediction_set["cat_prediction"] + prediction_set["xgb_prediction"] + prediction_set["tf_prediction"]) / 3
+        else:
+            prediction_set["prediction"] = (prediction_set["cat_prediction"] + prediction_set["xgb_prediction"]) / 2
         return prediction_set
     
     def classification_model(self,training_set,prediction_set,factors,multioutput):
@@ -21,10 +24,10 @@ class UniversalModeler(object):
         return prediction_set
     
    
-    def recommend_model(self,training_set,factors):
+    def recommend_model(self,training_set,factors,tf):
         training_set = training_set.sample(frac=1)
         refined = {"X":training_set[factors],"y":training_set["y"]}
-        models = m.regression(refined)
+        models = m.regression(refined,tf)
         return models
 
     def recommend_classification_model(self,training_set,factors,multioutput):

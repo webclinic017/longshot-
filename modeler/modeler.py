@@ -64,14 +64,15 @@ class Modeler(object):
         return df
 
     @classmethod
-    def regression(self,data):
+    def regression(self,data,tf=True):
         results = []
         # sk_result = self.sk_regression(data)
         # results.append(sk_result)
         xgb_result = self.xgb_regression(data)
         results.append(xgb_result)
         results.append(self.cat_regression(data))
-        results.append(self.tf_regression(data))
+        if tf:
+            results.append(self.tf_regression(data))
         df = pd.DataFrame(results)
         df["model_type"] = "regression"
         return df

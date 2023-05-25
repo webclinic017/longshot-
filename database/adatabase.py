@@ -5,7 +5,7 @@ import asyncio
 import os
 from dotenv import load_dotenv
 load_dotenv()
-token = os.getenv("MONGO")
+token = os.getenv("MONGO_KEY")
 import certifi
 ca = certifi.where()
 
@@ -22,7 +22,7 @@ class ADatabase(IDatabase):
         self.client = MongoClient("localhost",27017)
     
     def cloud_connect(self):
-        self.client = MongoClient(f"mongodb+srv://chungejy:{token}@mainstbets.slttl.mongodb.net/?retryWrites=true&w=majority",tlsCAFile=ca)
+        self.client = MongoClient(token,tlsCAFile=ca)
     
     def disconnect(self):
         self.client.close()
