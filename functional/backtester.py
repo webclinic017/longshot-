@@ -89,6 +89,66 @@ class Backtester(object):
         db.store("trades",final)
 
     @classmethod
+    def btc_backtest(self,sim,parameter,start_date,end_date,db):
+        classification = parameter["classification"]
+        ceiling = parameter["ceiling"]
+        floor = parameter["floor"]
+        floor_value = -0.05
+        positions = 1
+        new_sim = []
+
+        sim = sim[(sim["date"] >= start_date) & (sim["date"] <= end_date)]
+
+        ## optimizing
+        sim["date_boolean"] = [x.weekday() == 0 for x in sim["date"]]
+        sim = sim[sim["date_boolean"]==True]
+        sim["risk_boolean"] = sim["beta"] <= sim["beta"].mean()
+        sim["return_boolean"] = sim["delta"] > sim["rrr"]
+        sim["floor_value_boolean"] = [True in [row[1][f"return_{str(i)}"] <= floor_value for i in range(2,5)] for row in sim.iterrows()]
+        sim["floor_index"] = [min([i if row[1][f"return_{i}"] * row[1]["delta_sign"] <= floor_value else 5 for i in range(2,5)]) for row in sim.iterrows()]
+        sim["floor_boolean"] = 4 >= sim["floor_index"]
+        sim["returns"] = [1 + row[1][f"return_{4}"] * row[1]["delta_sign"] for row in  sim.iterrows()]
+        sim["floored_returns"] = [1 + floor_value if row[1]["floor_boolean"] else row[1]["returns"] for row in sim.iterrows()]
+
+
+        new_sim.append(sim)
+
+        ns = pd.concat(new_sim)
+        test = ns[(ns["return_boolean"]==True) & (ns["risk_boolean"]==True)]
+
+        ## filters
+        if parameter["value"] != True:
+            test["delta"] = test["delta"] * -1
+            test["classification_prediction"] = [not x for x in test["classification_prediction"]]
+
+        if classification:
+            test = test[test["classification_prediction"]==True]
+        if ceiling:
+            test = test[test["delta"]<=1]
+        
+        ledgers = []
+
+        stuff = ["year","week","ticker","delta_sign","delta","returns","floored_returns"]
+        for i in range(positions):    
+            ledger = test.sort_values(["year","week","delta"])[stuff].groupby(["year","week"],sort=False).nth(-i-1)
+            ledger["position"] = i
+            ledgers.append(ledger)
+        final = pd.concat(ledgers).reset_index()
+
+        if floor:
+            return_column = "floored_returns"
+        else:
+            return_column = "returns"
+        final["actual_returns"] = final[return_column]
+
+        ## labeling
+        for key in parameter.keys():
+            final[key] = parameter[key]
+
+        ## storing
+        db.store("trades",final)
+
+    @classmethod
     def experimental_backtest(self,sim,parameter,start_date,end_date,db):
         signal = parameter["signal"]
         req = parameter["req"]
@@ -170,92 +230,6 @@ class Backtester(object):
 
         ## storing
         db.store("trades",final)
-
-
-    @classmethod
-    def speculation_backtest(self,sim,parameters,start_date,end_date,db):
-        signal = parameters["signal"]
-        req = parameters["req"]
-        classification = parameters["classification"]
-        ceiling = parameters["ceiling"]
-        floor = parameters["floor"]
-        hedge = parameters["hedge"]
-        floor_value = -0.05
-        hedge_value = 0.25
-        positions = 10
-        iterration_sim = sim.copy()
-        if parameters["value"] != True:
-            iterration_sim["delta"] = iterration_sim["delta"] * -1
-            iterration_sim["classification_prediction"] = [not x for x in iterration_sim["classification_prediction"]]
-        listed = []
-        for position in range(positions):
-            date = start_date
-            while date < end_date:
-                try:
-                    todays_recs = iterration_sim[(iterration_sim["date"]==date)]
-                    if classification == True:
-                        todays_recs = todays_recs[(todays_recs["classification_prediction"]==True)]
-                    todays_recs.sort_values("delta",ascending=False,inplace=True)
-                    todays_listed = pd.DataFrame(listed)
-                    if todays_listed.index.size > 0:
-                        todays_listed = todays_listed[(todays_listed["date"]<=date) & (todays_listed["sell_date"]>=date)]["ticker"].unique()
-                    else:
-                        todays_listed = []
-                    if (todays_recs.index.size) > 0 and (date.weekday() < 2):
-                        offerings = todays_recs[~todays_recs["ticker"].isin(todays_listed)]
-                        if ceiling == True:
-                            offerings = offerings[(offerings["delta"] <= 1)]
-                        offering = offerings.iloc[0]
-                        if (offering["delta"] >= signal) and offering["ticker"] not in todays_listed:
-                            trade = offering
-                            ticker = trade["ticker"]
-                            buy_price = trade["adjclose"]
-                            final_time = 4 - date.weekday()
-                            exits = iterration_sim[(iterration_sim["ticker"]==ticker) & (iterration_sim["date"]>date)].iloc[:final_time]
-                            exits["gains"] = (exits["adjclose"] - buy_price) / buy_price
-                            gain_exits = exits[exits["gains"]>=req].copy().sort_values("date")
-                            floor_exits = exits[exits["gains"]<=floor_value].copy().sort_values("date")
-                            if (floor == True) and (floor_exits.index.size > 0):
-                                first_floor_date = floor_exits.iloc[0]["date"]
-                                if gain_exits.index.size > 0:
-                                    first_gain_date = gain_exits.iloc[0]["date"]
-                                    if first_floor_date < first_gain_date:
-                                        exit = floor_exits.iloc[0]
-                                        trade["sell_price"] = buy_price * (1+floor_value)
-                                    else:
-                                        exit = gain_exits.iloc[0]
-                                        trade["sell_price"] = buy_price * (1+(req))
-                                else:
-                                    exit = floor_exits.iloc[0]
-                                    trade["sell_price"] = trade["adjclose"] * (1+floor_value)
-                            else:        
-                                if gain_exits.index.size < 1:
-                                    exit = exits.iloc[-1]
-                                    trade["sell_price"] = exit["adjclose"]
-                                else:
-                                    exit = gain_exits.iloc[0]
-                                    trade["sell_price"] = buy_price * (1+(req))
-                            delta = (trade["sell_price"] - buy_price) / buy_price
-                            if hedge == True:
-                                sign = 1 if delta < 0 else - 1
-                                delta = delta + ((req * hedge_value) * sign)
-                            trade["projected_delta"] = offering["delta"]
-                            trade["sell_date"] = exit["date"]
-                            trade["position"] = position
-                            for key in parameters.keys():
-                                trade[key] = parameters[key]
-                            trade["delta"] = delta
-                            trade["holding"] = (trade["sell_date"] - trade["date"]).days
-                            db.store("trades",pd.DataFrame([trade]))
-                            listed.append(trade)
-                            date = exit["date"] + timedelta(days=1)
-                        else:
-                            date = date + timedelta(days=1)
-                    else:
-                        date = date + timedelta(days=1)
-                except Exception as e:
-                    print(str(e))
-                    date = date+timedelta(days=1)
     
     @classmethod
     def financial_backtest(self,sim,parameters,start_date,end_date):
