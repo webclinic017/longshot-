@@ -6,6 +6,7 @@ import os
 load_dotenv()
 token = os.getenv("EXCHANGERATES")
 
+## api middle man to handle api requests with exchangerates
 class FOREXExtractor(object):
 
     @classmethod

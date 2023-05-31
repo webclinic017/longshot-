@@ -1,11 +1,13 @@
 from modeler.modeler import Modeler as m
 import pickle
 
+## only relevant class as off now for modeling, buckets all stocks into a single model
 class UniversalModeler(object):
 
     def __init__(self):
         self.name = "universal"
     
+    ## first half is for historical purposes, does not save model only prediction values
     def model(self,training_set,prediction_set,factors,tf):
         refined = {"X":training_set[factors],"y":training_set["y"]}
         models = m.regression(refined,tf)
@@ -24,6 +26,7 @@ class UniversalModeler(object):
         return prediction_set
     
    
+   ## second half provides model but no prediction value unless recommend is called
     def recommend_model(self,training_set,factors,tf):
         training_set = training_set.sample(frac=1)
         refined = {"X":training_set[factors],"y":training_set["y"]}
@@ -36,7 +39,7 @@ class UniversalModeler(object):
         models = m.classification(refined,multioutput)
         return models
     
-   
+   ## provides recommendations based off a given model
     def recommend(self,models,data,factors):
         models["model"] = [pickle.loads(x) for x in models["model"]]
         prediction_set = m.predict(models,data,factors)

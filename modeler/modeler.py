@@ -21,11 +21,14 @@ from tensorflow.keras.losses import MeanSquaredError, BinaryCrossentropy
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.metrics import MeanAbsolutePercentageError
 from tensorflow.nn import sigmoid
+
 import warnings
 warnings.filterwarnings(action='ignore')
 
+## Modeling standardizer
 class Modeler(object):
 
+    ## standardizes predicting regardless of model, asks for clearly stated factors
     @classmethod
     def predict(self,models,prediction_set,factors):
         factors = [x for x in factors if x != "y" and x != "ticker"]
@@ -50,6 +53,7 @@ class Modeler(object):
                 print(str(e))
         return prediction_set
 
+    ## classification standardizer and aggregator, aggregates different modeling apis
     @classmethod
     def classification(self,data,multioutput):
         results = []
@@ -63,6 +67,7 @@ class Modeler(object):
         df["model_type"] = "classification"
         return df
 
+    ## regression standardizer and aggregator, aggregates different modeling apis
     @classmethod
     def regression(self,data,tf=True):
         results = []

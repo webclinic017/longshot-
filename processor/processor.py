@@ -1,7 +1,9 @@
 import pandas as pd
 
+## data standardizer
 class Processor(object):
     
+    ## standardizes timeseries data and column formats
     @classmethod
     def column_date_processing(self,data):
         new_cols = {}

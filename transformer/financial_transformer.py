@@ -1,8 +1,10 @@
 import pandas as pd
 from datetime import datetime, timedelta
 
+## Class to convert raw data into filing datasets
 class FinancialTransformer(object):
 
+    ## converts raw data into filing data
     @classmethod
     def transform(self,values,num):
         table = num.pivot_table(values="value",columns="tag",index=["adsh"])

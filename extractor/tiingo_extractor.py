@@ -6,6 +6,7 @@ import os
 load_dotenv()
 token = os.getenv("TIINGO")
 
+## api middle man to handle api requests with tiingo
 class TiingoExtractor(object):
 
     @classmethod

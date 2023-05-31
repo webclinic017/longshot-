@@ -1,7 +1,9 @@
 import pandas as pd
 
+## Class to transform sec filings mainly to read raw filing data
 class SECTransformer(object):
 
+    ## reading raw filing data from sec files
     @classmethod
     def transform(self,year,quarter,file_prefix):
         path = f"./sec/{year}q{quarter}/{file_prefix}.txt"

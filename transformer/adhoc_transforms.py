@@ -3,6 +3,7 @@ from processor.processor import Processor as p
 from datetime import timedelta
 import math
 
+## Mainly adhoc data products to support backtesting
 class Adhoc(object):
 
     @classmethod

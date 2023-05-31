@@ -4,10 +4,12 @@ import math
 import pandas as pd
 pd.options.mode.chained_assignment = None
 
+## Risk transformer to convert returns to variances and other risk metrics
 class Risk(object):
 
-    @classmethod
 
+    ## last step in bitcoin backtest data prep providing required returns
+    @classmethod
     def btc_backtest_prep(self,strat,backtest_data):
         if strat == "spec":
             backtest_data["projected_return"] = (backtest_data[f"prediction"] - backtest_data["adjclose"]) / backtest_data["adjclose"]
@@ -22,6 +24,7 @@ class Risk(object):
         backtest_data.sort_values("date",inplace=True)
         return backtest_data
 
+    ## first step in backtest data prep providing different return strats and beta values
     @classmethod
     def btc_risk_prep(self,ticker_sim,bench_returns):
         for i in range(2,5):
@@ -40,12 +43,14 @@ class Risk(object):
         completed  = completed.groupby(["date","ticker"]).mean().reset_index()
         return completed
     
+    ## helper function for weekly returns
     def calculate_weekly_return(row):
         if row["week"] % 13 != 2:
             return row["return_4"]
         else:
             return row["return_4"] + (row["commonstockdividendspersharecashpaid"] / row["adjclose"])
     
+    ## stock backtesting risk product transformations
     @classmethod
     def backtesting_risk_prep(self,ticker_sim,bench_returns,financials):
         financials = p.column_date_processing(financials)
@@ -78,6 +83,7 @@ class Risk(object):
         completed  = completed.dropna()
         return completed
     
+    ## mid step in stock backtesting prep providing required weekly returns
     @classmethod
     def required_returns(self,sim):
         sim["projected_return"] = (sim["prediction"] - sim["adjclose"]) / sim["adjclose"]
@@ -88,6 +94,7 @@ class Risk(object):
         sim["rrr"] = sim["weekly_yield"] + sim["beta"] * (sim["market_return"] - sim["weekly_yield"]) - 1
         return sim
     
+    ## last step in stock backtesting prep providing strat specific transformations
     @classmethod
     def strat_specific(self,strat,simulation,dividend_tickers,sp500,ranks):
         if strat == "dividends":

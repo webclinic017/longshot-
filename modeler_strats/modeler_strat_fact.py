@@ -4,6 +4,7 @@ from modeler_strats.subindustry_modeler import SubIndustryModeler
 from modeler_strats.ticker_modeler import TickerModeler
 from modeler_strats.industry_modeler import IndustryModeler
 
+## factory for modelers not relevant as of yet
 class ModelerStratFactory(object):
 
     @classmethod

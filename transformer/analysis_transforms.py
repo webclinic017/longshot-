@@ -1,7 +1,9 @@
 from datetime import datetime
 
+## Analysis transformations
 class Analysis(object):
 
+    ## converting trade data into portfolio data and performance data
     @classmethod
     def trade_analysis(self,indexer,ledger,positions,parameter,tyields,bench_returns):
         portfolio = ledger.pivot_table(index=["year","week"],columns="position",values="actual_returns").fillna(1).reset_index()
