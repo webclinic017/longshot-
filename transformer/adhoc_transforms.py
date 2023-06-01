@@ -16,7 +16,6 @@ class Adhoc(object):
         bench = pd.read_csv("./csv_files/FED/SPY.csv")
         bench = p.column_date_processing(bench)
         bench["day"] = [x.weekday() for x in bench["date"]]
-        bench["date"] = [x + timedelta(days=7) for x in bench["date"]]
         bench["week"] = [x.week for x in bench["date"]]
         bench["year"] = [x.year for x in bench["date"]]
         bench["quarter"] = [x.quarter for x in bench["date"]]
@@ -35,7 +34,6 @@ class Adhoc(object):
     def tyields(self):
         tyields = pd.read_csv("./csv_files/FED/DGS1.csv")
         tyields = p.column_date_processing(tyields)
-        tyields["date"] = [x + timedelta(days=7) for x in tyields["date"]]
         tyields["dgs1"] = tyields["dgs1"].replace(".",0)
         tyields["dgs1"] = tyields["dgs1"].astype("float")
         tyields["yield"] = [1+(x/100) for x in tyields["dgs1"]]
