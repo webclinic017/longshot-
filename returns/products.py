@@ -4,13 +4,8 @@ from datetime import timedelta
 import math
 
 ## Mainly adhoc data products to support backtesting
-class Adhoc(object):
+class Products(object):
 
-    @classmethod
-    def dividend_tickers(self,price_returns):
-        stuff = price_returns.groupby("ticker").mean().reset_index()
-        return list(stuff[stuff["commonstockdividendspersharecashpaid"]!=0]["ticker"].unique())
-    
     @classmethod
     def spy_bench(self):
         bench = pd.read_csv("./csv_files/FED/SPY.csv")
