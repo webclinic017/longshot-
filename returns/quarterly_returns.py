@@ -25,13 +25,10 @@ class QuarterlyReturns(object):
         return quarterlies
     
     @classmethod
-    def returns_backtest(self,simulation,strat,dividend_tickers):
+    def returns_backtest(self,name,simulation):
         simulation["market_quarterly_return"] = math.exp(np.log(1.15)/4)
-        if strat == "dividends":
-            simulation = simulation[simulation["ticker"].isin(dividend_tickers)]
-            simulation["projected_quarterly_return"] = (simulation[f"dividends_prediction"] - simulation["quarter_start"]) / simulation["quarter_start"]
-        else:
-            simulation["projected_quarterly_return"] = (simulation[f"financial_prediction"] - simulation["quarter_start"]) / simulation["quarter_start"]
+        # simulation = simulation[simulation["ticker"].isin(dividend_tickers)]
+        simulation["projected_quarterly_return"] = (simulation[f"{name}_prediction"] - simulation["quarter_start"]) / simulation["quarter_start"]
         simulation["quarterly_delta"] = [abs(x) for x in simulation["projected_quarterly_return"]]
         simulation["quarterly_delta_sign"] = [1 if x >= 0 else -1 for x in simulation["projected_quarterly_return"]]
         simulation["quarterly_rrr"] = simulation["quarterly_yield"] + simulation["quarterly_beta"] * (simulation["market_quarterly_return"] - simulation["quarterly_yield"]) - 1

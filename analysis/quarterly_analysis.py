@@ -14,7 +14,7 @@ class QuarterlyAnalysis(object):
         cumulative = portfolio[[i for i in counted_columns]].cumprod()
         cumulative["date_string"] = [f'{int(row[1]["year"])}-Q{int(row[1]["quarter"])}' for row in portfolio.iterrows()]
         cumulative["date"] = [datetime.strptime(x + '-1', '%G-Q%V-%u') for x in cumulative["date_string"]]
-        cumulative["pv"] = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in cumulative.iterrows()]
+        cumulative["pv"] = [sum([row[1][column] * 1/(2 ** (1+int(column))) for column in counted_columns]) for row in cumulative.iterrows()]
         cumulative = cumulative.merge(bench_returns[["date","adjclose","bench_return","variance"]],on="date",how="left")
         cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
         cumulative["return"] = cumulative["pv"].pct_change().fillna(1)
@@ -33,7 +33,7 @@ class QuarterlyAnalysis(object):
                 portfolio[i] = 1
         cumulative = portfolio[[i for i in counted_columns]].cumprod()
         cumulative["date"] = [datetime(int(row[1]["year"]), 3*int(row[1]["quarter"]),1) for row in portfolio.iterrows()]
-        cumulative["pv"] = [sum([row[1][column] * 0.1 for column in counted_columns]) for row in cumulative.iterrows()]
+        cumulative["pv"] = [sum([row[1][column] * 1/(2 ** (1+int(column))) for column in counted_columns]) for row in cumulative.iterrows()]
         bench = bench.fillna(method="bfill")
         cumulative = cumulative.merge(bench[["date","adjclose"]],on="date",how="left")
         cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]

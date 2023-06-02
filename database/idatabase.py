@@ -3,7 +3,6 @@ from abc import ABCMeta, abstractmethod
 ## sources https://realpython.com/python-interface/
 ## https://docs.python.org/3/library/abc.html
 
-## Database interface not that important
 class IDatabase(metaclass=ABCMeta):
     @classmethod
     def __subclasshook_(cls,subclass):
