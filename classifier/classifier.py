@@ -1,0 +1,5 @@
+from enum import Enum
+
+class Classifier(Enum):
+    WEEKLY_SPECULATION_CLASSIFIER = "WEEKLY_STOCK_SPECULATION_CLASSIFIER"
+    NONE = "NONE"

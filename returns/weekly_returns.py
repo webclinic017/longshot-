@@ -19,6 +19,7 @@ class WeeklyReturns(object):
     @classmethod
     def returns_backtest(self,name,backtest_data):
         backtest_data["projected_return"] = (backtest_data[f"{name}_prediction"] - backtest_data["adjclose"]) / backtest_data["adjclose"]
+        backtest_data["classification_prediction"] = backtest_data[f"{name}_classification_prediction"]
         backtest_data["delta"] = [abs(x) for x in backtest_data["projected_return"]]
         backtest_data["delta_sign"] = [1 if x >= 0 else -1 for x in backtest_data["projected_return"]]
         backtest_data["market_return"] = math.exp(np.log(1.15)/52)

@@ -8,6 +8,7 @@ from backtester.abacktester import ABacktester
 from risk.weekly_risk import WeeklyRisk as risk_class
 from returns.weekly_returns import WeeklyReturns as returns_class
 from parameters.weekly_parameters import WeeklyParameters as wp
+
 ## backtesting class to hold different backtesting methods
 class WeeklyBacktester(ABacktester):
 
@@ -27,13 +28,6 @@ class WeeklyBacktester(ABacktester):
 
     def create_parameters(self):
         return wp.parameters()
-    
-    def create_sim(self,simulation,price_returns):
-        sim = price_returns.merge(self.tyields[["year","week","weekly_yield"]],on=["year","week"],how="left")
-        colcol = [x for x in simulation.columns if self.strat_class.name in x] + ["year","week","ticker"]
-        sim = sim.merge(simulation[colcol],on=["year","week","ticker"],how="left")
-        sim = sim.dropna().groupby(["year","week","date","ticker"]).mean().reset_index()
-        return sim
     
     def stock_returns(self,market,sec,sp500):
         new_prices = []
@@ -55,14 +49,13 @@ class WeeklyBacktester(ABacktester):
 
     # risk oriented backtest utilizes weeklies with additional floor, and ceiling options includes shorts
     def backtest_helper(self,sim,positions,parameter,start_date,end_date,db):
-        # classification = parameter["classification"]
+        classification = parameter["classification"]
         ceiling = parameter["ceiling"]
         floor = parameter["floor"]
         floor_value = -0.05
         new_sim = []
 
         sim = sim[(sim["date"] >= start_date) & (sim["date"] <= end_date)]
-
         ## optimizing
         sim["date_boolean"] = [x.weekday() == 0 for x in sim["date"]]
         sim = sim[sim["date_boolean"]==True]
@@ -81,10 +74,11 @@ class WeeklyBacktester(ABacktester):
         ## filters
         if parameter["value"] != True:
             test["delta"] = test["delta"] * -1
-            # test["classification_prediction"] = [not x for x in test["classification_prediction"]]
+            if "classification_prediction" in test.columns:
+                test["classification_prediction"] = [not x for x in test["classification_prediction"]]
 
-        # if classification:
-        #     test = test[test["classification_prediction"]==True]
+        if classification and "classification_prediction" in test.columns:
+            test = test[test["classification_prediction"]==True]
         if ceiling:
             test = test[test["delta"]<=1]
 

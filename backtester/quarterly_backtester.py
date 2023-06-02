@@ -80,7 +80,7 @@ class QuarterlyBacktester(ABacktester):
 
         sim = sim[(sim["year"] >= start_date.year) & (sim["year"] <= end_date.year)]
 
-        ## optimizing
+        ## time based risk specific
         sim["risk_boolean"] = sim["quarterly_beta"] <= sim["quarterly_beta"].mean()
         sim["quarterly_return_boolean"] = sim["projected_quarterly_return"] > sim["quarterly_rrr"]
         sim["returns"] = [1 + row[1][f"quarterly_return"] for row in sim.iterrows()]
@@ -89,14 +89,20 @@ class QuarterlyBacktester(ABacktester):
         test = ns[(ns["quarterly_return_boolean"]==True) & (ns["risk_boolean"]==True)]
 
         ## filters
+        ## value component
         if parameter["value"] != True:
             test["quarterly_delta"] = test["quarterly_delta"] * -1
 
+        ## ceiling component
         if ceiling:
             test = test[test["quarterly_return"]<=1]
 
         ledgers = []
         ## ledger creation
+        ## strat specific 
+        ## rank specific
+        ## classification specific
+        ## return specific 
         stuff = ["year","quarter","ticker","projected_quarterly_return","returns"]
         for i in range(positions):    
             ledger = test.sort_values(["year","quarter","projected_quarterly_return"])[stuff].groupby(["year","quarter"],sort=False).nth(-i-1)
