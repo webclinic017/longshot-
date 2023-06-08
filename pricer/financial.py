@@ -30,6 +30,7 @@ class Financial(AIPricer):
         self.included_columns = ["year","quarter","ticker","adjclose","y"]
         self.included_live_columns = ["year","quarter","ticker","adjclose","y"]
         self.all_columns = self.factors + self.included_columns
+        self.positions = 10
         
     def training_set(self):
         self.db.connect()
@@ -39,7 +40,7 @@ class Financial(AIPricer):
         self.sec.connect()
         if training_sets.index.size < 1:
             training_set_dfs = []
-            for ticker in self.sp500["ticker"].unique()[:10]:
+            for ticker in self.sp500["ticker"].unique():
                 try:
                     cik = int(self.sp500[self.sp500["ticker"]==ticker]["CIK"])
                     prices = self.market.retrieve_ticker_prices("prices",ticker)
@@ -64,10 +65,39 @@ class Financial(AIPricer):
             self.market.disconnect()
             self.sec.disconnect()  
             training_sets = pd.concat(training_set_dfs)
-        self.db.connect()
-        self.db.store("historical_training_set",training_sets)
-        self.db.disconnect()
+            self.db.connect()
+            self.db.store("historical_training_set",training_sets)
+            self.db.disconnect()
 
-    def sim_processor(simulation):
-        simulation["week"] = simulation["week"] + 1
-        return simulation
+    def price_returns(self,ticker):
+        try:
+            self.market.connect()
+            self.sec.connect()
+            cik = int(self.sp500[self.sp500["ticker"]==ticker]["CIK"])
+            prices = self.market.retrieve_ticker_prices("prices",ticker)
+            prices = p.column_date_processing(prices)
+            filing = self.sec.retrieve_filing_data(cik)
+            filing = p.column_date_processing(filing)
+            self.market.disconnect()
+            self.sec.disconnect()  
+            financials = filing.groupby(["year","quarter"]).mean().reset_index()
+            ticker_sim = prices.copy()
+            quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjclose":"first"}).reset_index().rename(columns={"adjclose":"quarter_start"})
+            end_quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjclose":"last"}).reset_index().rename(columns={"adjclose":"quarter_end"})
+            quarterlies = quarterlies.merge(end_quarterlies[["year","quarter","quarter_end"]],on=["year","quarter"],how="left")
+            quarterlies["return_end"] = (quarterlies["quarter_end"] - quarterlies["quarter_start"]) / quarterlies["quarter_start"]
+            if "commonstockdividendspersharecashpaid" in financials.columns:
+                quarterlies = quarterlies.merge(financials[["year","quarter","commonstockdividendspersharecashpaid"]],how="left")
+                quarterlies["commonstockdividendspersharecashpaid"] = quarterlies["commonstockdividendspersharecashpaid"].fillna(0)
+            else:
+                quarterlies["commonstockdividendspersharecashpaid"] = 0
+            quarterly_returns = quarterlies.apply(self.calculate_quarterly_return, axis=1)
+            quarterlies.loc[:, "quarterly_return"] = quarterly_returns
+            return quarterlies
+        except Exception as e:
+            print(str(e))
+            return pd.DataFrame([{}])
+    
+    ## helper function for weekly returns
+    def calculate_quarterly_return(self,row):
+        return row["return_end"] + (row["commonstockdividendspersharecashpaid"] / row["quarter_start"])

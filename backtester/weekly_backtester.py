@@ -1,12 +1,6 @@
-from tqdm import tqdm
 import pandas as pd
 pd.options.mode.chained_assignment = None
-
-from risk.weekly_risk import WeeklyRisk as risk_class
-from returns.weekly_returns import WeeklyReturns as returns_class
 from backtester.abacktester import ABacktester
-from risk.weekly_risk import WeeklyRisk as risk_class
-from returns.weekly_returns import WeeklyReturns as returns_class
 from parameters.weekly_parameters import WeeklyParameters as wp
 
 ## backtesting class to hold different backtesting methods
@@ -14,14 +8,11 @@ class WeeklyBacktester(ABacktester):
 
     def __init__(self,strat_class,current,positions,start_date,end_date):
         super().__init__(strat_class,current,positions,start_date,end_date)
-        self.returns = returns_class
-        self.risk = risk_class
     
     def backtest(self,parameters,sim,sp500):
         self.strat_class.db.connect()
         self.strat_class.db.drop("trades")
         backtest_data = sim.copy().dropna()
-        backtest_data = returns_class.returns_backtest(self.strat_class.name,backtest_data)
         for parameter in parameters:
             self.backtest_helper(backtest_data.copy(),self.strat_class.positions,parameter,self.start_date,self.end_date,self.strat_class.db)
         self.strat_class.db.disconnect()
@@ -29,24 +20,6 @@ class WeeklyBacktester(ABacktester):
     def create_parameters(self):
         return wp.parameters()
     
-    def stock_returns(self,market,sec,sp500):
-        new_prices = []
-        market.connect()
-        sp500 = sp500.rename(columns={"Symbol":"ticker"})
-        tickers = ["BTC"] if self.strat_class.asset_class == "crypto" else sp500["ticker"].unique()[:10]
-        for ticker in tickers:
-            try:
-                ticker_sim = market.retrieve_ticker_prices(self.strat_class.asset_class,ticker)
-                ticker_sim = self.returns.returns(ticker_sim)
-                completed = self.risk.risk(ticker_sim,self.bench_returns)
-                new_prices.append(completed)
-            except Exception as e:
-                print(str(e))
-                continue
-        market.disconnect()
-        price_returns = pd.concat(new_prices)
-        return price_returns
-
     # risk oriented backtest utilizes weeklies with additional floor, and ceiling options includes shorts
     def backtest_helper(self,sim,positions,parameter,start_date,end_date,db):
         classification = parameter["classification"]

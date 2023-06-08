@@ -1,14 +1,19 @@
-import pandas as pd
 from classifier.classifier import Classifier as classifier_list
-from time_horizons.time_horizons import TimeHorizons as timehorizons
-
+from classifier.speculation_classifier import SpeculationClassifier
+from asset_classes.asset_classes import AssetClasses
+from time_horizons.time_horizons import TimeHorizons
+from classifier.financial_classifier import FinancialClassifier
 class ClassifierFactory(object):
 
     @classmethod
     def build(self,classifier):
         match classifier:
             case classifier_list.NONE:
-                result = None 
+                result = None
+            case classifier_list.WEEKLY_STOCK_SPECULATION_CLASSIFIER:
+                result =  SpeculationClassifier(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
+            case classifier_list.QUARTERLY_STOCK_FINANCIAL_CLASSIFIER:
+                result = FinancialClassifier(AssetClasses.STOCKS,TimeHorizons.QUARTERLY)
             case _:
                 result = None
         return result

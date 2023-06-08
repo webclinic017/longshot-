@@ -1,6 +1,6 @@
-from pricer.apricer import APricer
+from classifier.aclassifier import AClassifier
 
-class AIPricer(APricer):
+class AIClassifier(AClassifier):
 
     def __init__(self,asset_class,time_horizon):
         super().__init__(asset_class,time_horizon)

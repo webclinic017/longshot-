@@ -1,4 +1,5 @@
 from enum import Enum
 
 class Ranker(Enum):
+    QUARTERLY_STOCK_EARNINGS_RANKER = "QUARTERLY_STOCK_EARNINGS_RANKER"
     NONE = "NONE"

@@ -18,7 +18,7 @@ class Speculation(AIStrategy):
         
     def training_set(self,market,sec,sp500):
         training_sets = []
-        tickers = ["BTC"] if self.asset_class == "crypto" else list(sp500["ticker"].unique()[:10])
+        tickers = ["BTC"] if self.asset_class.value == "crypto" else list(sp500["ticker"].unique()[:10])
         for ticker in tickers:
             try:
                 prices = market.retrieve_ticker_prices(self.asset_class,ticker)
