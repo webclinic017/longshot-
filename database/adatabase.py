@@ -41,6 +41,7 @@ class ADatabase(IDatabase):
             table.insert_many(records)
         except Exception as e:
             print(self.name,table_name,str(e))
+
     ## retrieving data
     def retrieve(self,table_name):
         try:
@@ -87,6 +88,15 @@ class ADatabase(IDatabase):
             table.drop()
         except Exception as e:
             print(self.name,table_name,str(e))
+    
+    def drop_all(self):
+        try:
+            db = self.client[self.name]
+            tables = db.collection_names()
+            for table in tables:
+                db.drop_collection(table)
+        except Exception as e:
+            print(str(e))
     
     ## for time series data retrieves all dates in the series
     def retrieve_collection_date_range(self,collection_name):

@@ -35,3 +35,7 @@ class Fund(object):
             returns = portfolio.create_returns()
             sim_returns = portfolio.merge_sim_returns(sim,returns)
             portfolio.run_historical_backtest(sim_returns)
+    
+    def reset(self):
+        for portfolio in self.portfolios:
+            portfolio.reset()

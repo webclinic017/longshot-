@@ -15,13 +15,13 @@ class WeeklyAnalysis(object):
         cumulative = portfolio[[i for i in counted_columns]].cumprod()
         cumulative["date_string"] = [f'{int(row[1]["year"])}-W{int(row[1]["week"])}' for row in portfolio.iterrows()]
         cumulative["date"] = [datetime.strptime(x + '-1', '%G-W%V-%u') for x in cumulative["date_string"]]
-        cumulative["pv"] = [sum([row[1][column] * 1/(2 ** (1+int(column))) for column in counted_columns]) for row in cumulative.iterrows()]
-        cumulative = cumulative.merge(bench_returns[["date","adjclose","bench_return","variance"]],on="date",how="left")
+        cumulative["pv"] = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in cumulative.iterrows()]
+        cumulative = cumulative.merge(bench_returns[["date","adjclose","bench_weekly_return","weekly_variance"]],on="date",how="left")
         cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
         cumulative["return"] = cumulative["pv"].pct_change().fillna(1)
-        cumulative["beta"] = cumulative[["return","bench_return"]].cov().iloc[0][1]/cumulative["variance"].iloc[-1]
-        cumulative["rrr"] = tyields["yield"].iloc[-1] + cumulative["beta"].iloc[-1]*(cumulative["bench"].iloc[-1]-tyields["yield"].iloc[-1])
-        cumulative["sharpe"] = (cumulative["pv"] - tyields["yield"].iloc[-1]) / cumulative["beta"].iloc[-1]
+        cumulative["beta"] = cumulative[["return","bench_weekly_return"]].cov().iloc[0][1]/cumulative["weekly_variance"].iloc[-1]
+        cumulative["rrr"] = tyields["weekly_yield"].iloc[-1] + cumulative["beta"].iloc[-1]*(cumulative["bench"].iloc[-1]-tyields["weekly_yield"].iloc[-1])
+        cumulative["sharpe"] = (cumulative["pv"] - tyields["weekly_yield"].iloc[-1]) / cumulative["beta"].iloc[-1]
         for index_stuff in indexer:
             cumulative[index_stuff] = parameter[index_stuff]
         return cumulative
@@ -32,7 +32,7 @@ class WeeklyAnalysis(object):
         cumulative = portfolio[[i for i in counted_columns]].cumprod()
         cumulative["date_string"] = [f'{int(row[1]["year"])}-W{int(row[1]["week"])}' for row in portfolio.iterrows()]
         cumulative["date"] = [datetime.strptime(x + '-1', '%G-W%V-%u') + timedelta(days=4) for x in cumulative["date_string"]]
-        cumulative["pv"] = [sum([row[1][column] * 1/(2 ** (1+int(column))) for column in counted_columns]) for row in cumulative.iterrows()]
+        cumulative["pv"] = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in cumulative.iterrows()]
         bench = bench.fillna(method="bfill")
         cumulative = cumulative.merge(bench[["date","adjclose"]],on="date",how="left")
         cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]

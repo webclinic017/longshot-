@@ -3,24 +3,20 @@
 class Parameters(object):
 
     @classmethod
-    def parameters(self,simulation_columns):
+    def parameters(self):
         values = [True,False]
         ceilings = [True,False]
+        classification = [True,False]
+        rank = [True,False]
         parameters = []
         for value in values:
             for ceiling in ceilings:
-                parameter = {"value":value
+                for classification in [True,False]:
+                    for rank in [True,False]:
+                        parameter = {"value":value
                                 ,"ceiling":ceiling
+                                ,"classification":classification
+                                ,"rank":rank
                             }
-                if "classification_prediction" in simulation_columns:
-                    for classification in [True,False]:
-                        parameter["classification"] = classification
-                        if "rank_prediction" in simulation_columns:
-                            for rank in [True,False]:
-                                parameter["rank"] = rank
-                                parameters.append(parameter)
-                        else:
-                            parameters.append(parameter)
-                else:
-                    parameters.append(parameter)
+                        parameters.append(parameter)
         return parameters
