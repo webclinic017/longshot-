@@ -17,12 +17,24 @@ class ABacktester(object):
         for parameter in parameters:
             final_data = backtest_data.copy()
             market_return = parameter["market_return"]
-            final_data = self.portfolio_class.returns.returns(market_return,self.pricer_class.time_horizon_class,final_data)
+            final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy())
             if parameter["rank"] == True:
-                final_data = self.portfolio_class.ranker_class.backtest_rank(backtest_data.copy())
+                final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
             trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date)
             self.portfolio_class.db.store(self.table_name,trades)
         self.portfolio_class.db.disconnect()
+    
+    def recommendation(self,sim,parameter):
+        backtest_data = sim.copy().dropna()
+        t = []
+        final_data = backtest_data.copy()
+        market_return = parameter["market_return"]
+        final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data)
+        if parameter["rank"] == True:
+            final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
+        trades = self.recommendation_helper(final_data,parameter)
+        t.append(trades)
+        return t
     
     def backtest_helper(self,sim,parameter,start_date,end_date):
         value = parameter["value"]
@@ -42,7 +54,7 @@ class ABacktester(object):
                 sim["classification_prediction"] = [int(not x) for x in sim["classification_prediction"]]
 
         if not short:
-            sim = sim[sim[f"{naming}ly_delta_sign"] == 1]
+            sim = sim[sim[f"{naming}ly_delta_sign"] == 1.0]
             return_column = "returns"
         else:
             return_column = "short_returns"
@@ -83,6 +95,51 @@ class ABacktester(object):
         final = pd.concat(ledgers).reset_index()
 
         final["actual_returns"] = final[return_column]
+
+        ## labeling
+        for key in parameter.keys():
+            final[key] = parameter[key]
+
+        ## storing
+        return final
+    
+    def recommendation_helper(self,sim,parameter):
+        value = parameter["value"]
+        ceiling = parameter["ceiling"]
+        classification = parameter["classification"]
+        short = parameter["short"]
+        naming = self.portfolio_class.pricer_class.time_horizon_class.naming_convention
+        positions = self.portfolio_class.pricer_class.positions
+        ## optimizing
+        
+        if value:
+            sim[f"{naming}ly_delta_sign"] = sim[f"{naming}ly_delta_sign"] * -1
+            if "classification_prediction" in sim.columns:
+                sim["classification_prediction"] = [int(not x) for x in sim["classification_prediction"]]
+
+        if not short:
+            sim = sim[sim[f"{naming}ly_delta_sign"] == 1]
+        
+        sim["risk_boolean"] = sim[f"{naming}ly_beta"] <= sim[f"{naming}ly_beta"].mean()
+        sim["return_boolean"] = sim[f"{naming}ly_delta"] > sim[f"{naming}ly_rrr"]
+        ##weekly logic
+
+        test = sim[(sim["return_boolean"]==True) & (sim["risk_boolean"]==True)]
+        
+        if classification and "classification_prediction" in test.columns:
+            test = test[test["classification_prediction"]==1.0]
+                
+        if ceiling:
+            test = test[test[f"{naming}ly_delta"]<=1]
+
+        ledgers = []
+        ## ledger creation
+        stuff = ["year",naming,"ticker",f"{naming}ly_delta",f"{naming}ly_delta_sign"]
+        for i in range(positions):    
+            ledger = test.sort_values(["year",naming,f"{naming}ly_delta"])[stuff].groupby(["year",naming],sort=False).nth(-i-1)
+            ledger["position"] = i
+            ledgers.append(ledger)
+        final = pd.concat(ledgers).reset_index()
 
         ## labeling
         for key in parameter.keys():

@@ -121,7 +121,7 @@ class APortfolio(object):
         sp500 = self.pricer_class.sp500.copy()
         sp500 = sp500.rename(columns={"Symbol":"ticker"})
         tickers = ["BTC"] if self.pricer_class.asset_class == "crypto" else sp500["ticker"].unique()
-        for ticker in tqdm(tickers):
+        for ticker in tickers:
             try:
                 ticker_sim = self.pricer_class.price_returns(ticker)
                 completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim)
@@ -137,7 +137,7 @@ class APortfolio(object):
         sp500 = self.pricer_class.sp500.copy()
         sp500 = sp500.rename(columns={"Symbol":"ticker"})
         tickers = ["BTC"] if self.pricer_class.asset_class == "crypto" else sp500["ticker"].unique()
-        for ticker in tqdm(tickers):
+        for ticker in tickers:
             try:
                 ticker_sim = self.pricer_class.risk_returns(ticker)
                 completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim)
@@ -160,6 +160,9 @@ class APortfolio(object):
 
     def run_backtest(self,simulation):
         self.backtester.backtest(simulation)
+    
+    def recommendation(self,simulation,parameter):
+        return self.backtester.recommendation(simulation,parameter)
         
     def pull_historical_trades(self):
         self.db.connect()

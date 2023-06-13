@@ -1,7 +1,7 @@
 from database.market import Market
 from database.sec import SEC
-from backtester.abacktester import ABacktester
-
+from tqdm import tqdm
+import pandas as pd
 
 class Fund(object):
 
@@ -34,14 +34,25 @@ class Fund(object):
             portfolio.initialize_backtester(self.backtest_start_date,self.backtest_end_date)
 
     def run_historical_backtest(self):
-        for portfolio in self.portfolios:
+        for portfolio in tqdm(self.portfolios):
             sim = portfolio.create_simulation()
             returns = portfolio.create_returns()
             sim_returns = portfolio.merge_sim_returns(sim,returns)
             portfolio.run_backtest(sim_returns)
     
+    def run_recommendation(self):
+        recs = []
+        for portfolio in tqdm(self.portfolios):
+            sim = portfolio.create_simulation()
+            returns = portfolio.create_risk_returns()
+            sim_returns = portfolio.merge_sim_returns(sim,returns)
+            rec = pd.concat(portfolio.recommendation(sim_returns))
+            rec["portfolio"] = portfolio.name
+            recs.append(rec)
+        return recs
+    
     def run_backtest(self):
-        for portfolio in self.portfolios:
+        for portfolio in tqdm(self.portfolios):
             sim = portfolio.create_current_simulation()
             returns = portfolio.create_returns()
             sim_returns = portfolio.merge_sim_returns(sim,returns)
