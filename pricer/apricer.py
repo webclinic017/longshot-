@@ -25,3 +25,7 @@ class APricer(object):
         sim = self.db.retrieve("sim")
         self.db.disconnect()
         return sim
+    
+    def sim_processor(self,simulation):
+        simulation[self.time_horizon_class.prediction_pivot_column] = simulation[self.time_horizon_class.prediction_pivot_column] + self.time_horizon_class.prediction_pivot_number
+        return simulation

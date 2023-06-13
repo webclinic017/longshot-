@@ -16,6 +16,8 @@ class ABacktester(object):
         parameters = params.parameters()
         for parameter in parameters:
             final_data = backtest_data.copy()
+            market_return = parameter["market_return"]
+            final_data = self.portfolio_class.returns.returns(market_return,self.pricer_class.time_horizon_class,final_data)
             if parameter["rank"] == True:
                 final_data = self.portfolio_class.ranker_class.backtest_rank(backtest_data.copy())
             trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date)
@@ -26,7 +28,7 @@ class ABacktester(object):
         value = parameter["value"]
         ceiling = parameter["ceiling"]
         classification = parameter["classification"]
-
+        short = parameter["short"]
         # floor = parameter["floor"]
         floor_value = -0.05
         naming = self.portfolio_class.pricer_class.time_horizon_class.naming_convention
@@ -38,18 +40,26 @@ class ABacktester(object):
             sim[f"{naming}ly_delta_sign"] = sim[f"{naming}ly_delta_sign"] * -1
             if "classification_prediction" in sim.columns:
                 sim["classification_prediction"] = [int(not x) for x in sim["classification_prediction"]]
-        
+
+        if not short:
+            sim = sim[sim[f"{naming}ly_delta_sign"] == 1]
+            return_column = "returns"
+        else:
+            return_column = "short_returns"
+
         if naming == "week":
             sim["date_boolean"] = [x.weekday() == 0 for x in sim["date"]]
             sim = sim[sim["date_boolean"]==True]
             # sim["floor_value_boolean"] = [True in [row[1][f"return_{str(i)}"] <= floor_value for i in range(2,5)] for row in sim.iterrows()]
             sim["floor_index"] = [min([i if row[1][f"return_{i}"] * row[1]["weekly_delta_sign"] <= floor_value else 5 for i in range(2,5)]) for row in sim.iterrows()]
             sim["floor_boolean"] = 4 >= sim["floor_index"]
-            sim["nonfloored_returns"] = [1 + row[1][f"return_{4}"] * row[1]["weekly_delta_sign"] for row in  sim.iterrows()]
-            sim["returns"] = [1 + floor_value if row[1]["floor_boolean"] else row[1]["nonfloored_returns"] for row in sim.iterrows()]
+            sim["nonfloored_short_returns"] = [1 + row[1][f"return_{4}"] * row[1]["weekly_delta_sign"] for row in  sim.iterrows()]
+            sim["short_returns"] = [1 + floor_value if row[1]["floor_boolean"] else row[1]["nonfloored_short_returns"] for row in sim.iterrows()]
+            sim["returns"] = [1 + row[1][f"{naming}ly_return"] for row in  sim.iterrows()]
         else:   
         ##quarterly logic
-            sim["returns"] = [1 + row[1][f"{naming}ly_return"] * row[1][f"{naming}ly_delta_sign"] for row in  sim.iterrows()]
+            sim["short_returns"] = [1 + row[1][f"{naming}ly_return"] * row[1][f"{naming}ly_delta_sign"] for row in  sim.iterrows()]
+            sim["returns"] = [1 + row[1][f"{naming}ly_return"] for row in  sim.iterrows()]
         
         sim["risk_boolean"] = sim[f"{naming}ly_beta"] <= sim[f"{naming}ly_beta"].mean()
         sim["return_boolean"] = sim[f"{naming}ly_delta"] > sim[f"{naming}ly_rrr"]
@@ -65,17 +75,13 @@ class ABacktester(object):
 
         ledgers = []
         ## ledger creation
-        stuff = ["year",naming,"ticker",f"{naming}ly_delta",f"{naming}ly_delta_sign","returns"]
+        stuff = ["year",naming,"ticker",f"{naming}ly_delta",f"{naming}ly_delta_sign","short_returns","returns"]
         for i in range(positions):    
             ledger = test.sort_values(["year",naming,f"{naming}ly_delta"])[stuff].groupby(["year",naming],sort=False).nth(-i-1)
             ledger["position"] = i
             ledgers.append(ledger)
         final = pd.concat(ledgers).reset_index()
 
-        # if floor:
-        #     return_column = "floored_returns"
-        # else:
-        return_column = "returns"
         final["actual_returns"] = final[return_column]
 
         ## labeling

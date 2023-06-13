@@ -28,13 +28,24 @@ class Fund(object):
     def initialize_historical_backtesters(self):
         for portfolio in self.portfolios:
             portfolio.initialize_historical_backtester(self.backtest_start_date,self.backtest_end_date)
+    
+    def initialize_backtesters(self):
+        for portfolio in self.portfolios:
+            portfolio.initialize_backtester(self.backtest_start_date,self.backtest_end_date)
 
     def run_historical_backtest(self):
         for portfolio in self.portfolios:
             sim = portfolio.create_simulation()
             returns = portfolio.create_returns()
             sim_returns = portfolio.merge_sim_returns(sim,returns)
-            portfolio.run_historical_backtest(sim_returns)
+            portfolio.run_backtest(sim_returns)
+    
+    def run_backtest(self):
+        for portfolio in self.portfolios:
+            sim = portfolio.create_current_simulation()
+            returns = portfolio.create_returns()
+            sim_returns = portfolio.merge_sim_returns(sim,returns)
+            portfolio.run_backtest(sim_returns)
     
     def reset(self):
         for portfolio in self.portfolios:

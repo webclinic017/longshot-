@@ -43,4 +43,14 @@ class UniversalModeler(object):
     def recommend(self,models,data,factors):
         models["model"] = [pickle.loads(x) for x in models["model"]]
         prediction_set = m.predict(models,data,factors)
+        if "tf_prediction" in prediction_set.columns:
+            prediction_set["prediction"] = (prediction_set["cat_prediction"] + prediction_set["xgb_prediction"] + prediction_set["tf_prediction"]) / 3
+        else:
+            prediction_set["prediction"] = (prediction_set["cat_prediction"] + prediction_set["xgb_prediction"]) / 2
+        return prediction_set
+    
+    def recommend_classification(self,models,data,factors):
+        models["model"] = [pickle.loads(x) for x in models["model"]]
+        prediction_set = m.predict(models,data,factors)
+        prediction_set["prediction"] = ((prediction_set["xgb_prediction"] + prediction_set["cat_prediction"] + prediction_set["tf_prediction"]) / 3) > 0.5
         return prediction_set

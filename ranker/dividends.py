@@ -14,7 +14,7 @@ class Speculation(AIStrategy):
         self.included_columns = ["year","week","ticker","adjclose","y"]
         self.included_live_columns = ["year","week","ticker","adjclose","y"]
         self.all_columns = self.factors + self.included_columns
-        self.positions = 10 if asset_class == "prices" else 1
+        self.positions = 20 if asset_class == "prices" else 1
         
     def training_set(self,market,sec,sp500):
         training_sets = []

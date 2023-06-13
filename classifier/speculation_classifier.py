@@ -15,9 +15,9 @@ class SpeculationClassifier(AIClassifier):
         self.included_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
         self.included_live_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
         self.all_columns = self.factors + self.included_columns
-        self.positions = 10 if asset_class.value == "stocks" else 1
+        self.positions = 20 if asset_class.value == "stocks" else 1
         
-    def training_set(self,ticker,prices):
+    def training_set(self,ticker,prices,current):
         ticker_data = prices.copy()
         ticker_data.sort_values("date",ascending=True,inplace=True)
         ticker_data["adjclose"] = [float(x) for x in ticker_data["adjclose"]]
@@ -28,10 +28,14 @@ class SpeculationClassifier(AIClassifier):
         ticker_data["rolling14"] = ticker_data["adjclose"].rolling(window=14).mean()
         ticker_data.dropna(inplace=True)
         ticker_data["ticker"] = ticker
-        ticker_data["future"] = ticker_data["adjclose"].shift(-self.time_horizon_class.y_pivot_number)
-        ticker_data["delta"] = (ticker_data["future"] - ticker_data["adjclose"]) / ticker_data["adjclose"]
-        ticker_data["y"] = [x > 0 for x in ticker_data["delta"]]
+        if not current:
+            ticker_data["future"] = ticker_data["adjclose"].shift(-self.time_horizon_class.y_pivot_number)
+            ticker_data["delta"] = (ticker_data["future"] - ticker_data["adjclose"]) / ticker_data["adjclose"]
+            ticker_data["y"] = [x > 0 for x in ticker_data["delta"]]
+            columns = self.all_columns
+        else:
+            columns = self.all_columns[:-1]
         ticker_data = ticker_data.replace([np.inf, -np.inf], np.nan).dropna()
         ticker_data.dropna(inplace=True)
-        ticker_data = ticker_data[self.all_columns]
+        ticker_data = ticker_data[columns]
         return ticker_data

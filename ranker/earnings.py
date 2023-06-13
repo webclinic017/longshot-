@@ -30,9 +30,9 @@ class Earnings(AIRanker):
         self.included_columns = ["year","quarter","ticker","adjclose","y"]
         self.included_live_columns = ["year","quarter","ticker","adjclose","y"]
         self.all_columns = self.factors + self.included_columns
-        self.positions = 10
+        self.positions = 20
         
-    def training_set(self,ticker,prices,filing):
+    def training_set(self,ticker,prices,filing,current):
         filing = filing.groupby(["year","quarter"]).mean().reset_index()
         ticker_data = prices.copy()
         ticker_data.sort_values("date",ascending=True,inplace=True)
@@ -40,8 +40,12 @@ class Earnings(AIRanker):
         ticker_data = ticker_data.groupby(["year","quarter"]).mean().reset_index()
         ticker_data["ticker"] = ticker
         ticker_data = ticker_data.merge(filing,on=["year","quarter"],how="left").reset_index()
-        ticker_data["y"] = ticker_data["earningspersharebasic"].shift(-4)
-        ticker_data = ticker_data[self.all_columns].dropna()
+        if not current:
+            ticker_data["y"] = ticker_data["earningspersharebasic"].shift(-4)
+            columns = self.all_columns
+        else:
+            columns = self.all_columns[:-1]
+        ticker_data = ticker_data[columns].dropna()
         return ticker_data
 
     def backtest_rank(self,simulation):
