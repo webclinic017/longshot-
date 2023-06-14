@@ -46,8 +46,9 @@ class ABacktester(object):
         ceiling = parameter["ceiling"]
         classification = parameter["classification"]
         short = parameter["short"]
+        risk = parameter["risk"]
         # floor = parameter["floor"]
-        floor_value = -0.05
+        # floor_value = -0.05
         naming = self.portfolio_class.pricer_class.time_horizon_class.naming_convention
         positions = self.portfolio_class.pricer_class.positions
         sim = sim[(sim["year"] >= start_date.year) & (sim["year"] <= end_date.year)]
@@ -66,10 +67,10 @@ class ABacktester(object):
 
         if naming == "week":
             # sim["floor_value_boolean"] = [True in [row[1][f"return_{str(i)}"] <= floor_value for i in range(2,5)] for row in sim.iterrows()]
-            sim["floor_index"] = [min([i if row[1][f"return_{i}"] * row[1]["weekly_delta_sign"] <= floor_value else 5 for i in range(2,5)]) for row in sim.iterrows()]
-            sim["floor_boolean"] = 4 >= sim["floor_index"]
-            sim["nonfloored_short_returns"] = [1 + row[1][f"return_{4}"] * row[1]["weekly_delta_sign"] for row in  sim.iterrows()]
-            sim["short_returns"] = [1 + floor_value if row[1]["floor_boolean"] else row[1]["nonfloored_short_returns"] for row in sim.iterrows()]
+            # sim["floor_index"] = [min([i if row[1][f"return_{i}"] * row[1]["weekly_delta_sign"] <= floor_value else 5 for i in range(2,5)]) for row in sim.iterrows()]
+            # sim["floor_boolean"] = 4 >= sim["floor_index"]
+            sim["short_returns"] = [1 + row[1][f"return_{4}"] * row[1]["weekly_delta_sign"] for row in  sim.iterrows()]
+            # sim["short_returns"] = [1 + floor_value if row[1]["floor_boolean"] else row[1]["nonfloored_short_returns"] for row in sim.iterrows()]
             sim["returns"] = [1 + row[1][f"{naming}ly_return"] for row in  sim.iterrows()]
         else:   
         ##quarterly logic
@@ -80,8 +81,10 @@ class ABacktester(object):
         sim["return_boolean"] = sim[f"{naming}ly_delta"] > sim[f"{naming}ly_rrr"]
         ##weekly logic
 
-        test = sim[(sim["return_boolean"]==True) & (sim["risk_boolean"]==True)]
-        
+        test = sim[(sim["return_boolean"]==True)]
+
+        if risk:
+            test = test[test["risk_boolean"] ==True]    
         if classification and "classification_prediction" in test.columns:
             test = test[test["classification_prediction"]==1.0]
                 
