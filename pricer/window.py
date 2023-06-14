@@ -45,7 +45,7 @@ class Window(NonAIPricer):
         for i in range(2,5):
             ticker_sim[f"risk_return_{i}"] = (ticker_sim["adjclose"] - ticker_sim["adjclose"].shift(i)) / ticker_sim["adjclose"].shift(i)
         ticker_sim["day"] = [x.weekday() for x in ticker_sim["date"]]
-        ticker_sim = ticker_sim[ticker_sim["day"]==4]
+        ticker_sim = ticker_sim[ticker_sim["day"]==0]
         ticker_sim["weekly_risk_return"] = ticker_sim["risk_return_4"]
         ticker_sim["week"] = ticker_sim["week"] + 1
         return ticker_sim
