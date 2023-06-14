@@ -9,6 +9,7 @@ class ABacktester(object):
         self.portfolio_class = portfolio_class
         self.table_name = "trades" if self.current else "historical_trades"
     
+    ##FINANCIALS DUN WORK NO MORE
     def backtest(self,sim):
         self.portfolio_class.db.connect()
         self.portfolio_class.db.drop(self.table_name)
@@ -17,7 +18,10 @@ class ABacktester(object):
         for parameter in parameters:
             final_data = backtest_data.copy()
             market_return = parameter["market_return"]
-            final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy())
+            sell_day = parameter["sell_day"]
+            final_data["weekly_return"] = final_data[f"return_{sell_day}"]
+            final_data = final_data[final_data["day"]==parameter["buy_day"]]
+            final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),False)
             if parameter["rank"] == True:
                 final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
             trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date)
@@ -29,7 +33,8 @@ class ABacktester(object):
         t = []
         final_data = backtest_data.copy()
         market_return = parameter["market_return"]
-        final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data)
+        final_data = final_data[final_data["day"]==parameter["buy_day"]-1]
+        final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),True)
         if parameter["rank"] == True:
             final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
         trades = self.recommendation_helper(final_data,parameter)
@@ -45,7 +50,7 @@ class ABacktester(object):
         floor_value = -0.05
         naming = self.portfolio_class.pricer_class.time_horizon_class.naming_convention
         positions = self.portfolio_class.pricer_class.positions
-        sim = sim[(sim["date"] >= start_date) & (sim["date"] <= end_date)]
+        sim = sim[(sim["year"] >= start_date.year) & (sim["year"] <= end_date.year)]
         ## optimizing
         
         if value:
@@ -60,8 +65,6 @@ class ABacktester(object):
             return_column = "short_returns"
 
         if naming == "week":
-            sim["date_boolean"] = [x.weekday() == 0 for x in sim["date"]]
-            sim = sim[sim["date_boolean"]==True]
             # sim["floor_value_boolean"] = [True in [row[1][f"return_{str(i)}"] <= floor_value for i in range(2,5)] for row in sim.iterrows()]
             sim["floor_index"] = [min([i if row[1][f"return_{i}"] * row[1]["weekly_delta_sign"] <= floor_value else 5 for i in range(2,5)]) for row in sim.iterrows()]
             sim["floor_boolean"] = 4 >= sim["floor_index"]

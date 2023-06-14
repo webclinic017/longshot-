@@ -123,7 +123,7 @@ class APortfolio(object):
         tickers = ["BTC"] if self.pricer_class.asset_class == "crypto" else sp500["ticker"].unique()
         for ticker in tickers:
             try:
-                ticker_sim = self.pricer_class.price_returns(ticker)
+                ticker_sim = self.pricer_class.price_returns(ticker,False)
                 completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim)
                 new_prices.append(completed)
             except Exception as e:
@@ -132,14 +132,14 @@ class APortfolio(object):
         price_returns = pd.concat(new_prices)
         return price_returns
 
-    def create_risk_returns(self):
+    def create_current_returns(self):
         new_prices = []
         sp500 = self.pricer_class.sp500.copy()
         sp500 = sp500.rename(columns={"Symbol":"ticker"})
         tickers = ["BTC"] if self.pricer_class.asset_class == "crypto" else sp500["ticker"].unique()
         for ticker in tickers:
             try:
-                ticker_sim = self.pricer_class.risk_returns(ticker)
+                ticker_sim = self.pricer_class.price_returns(ticker,True)
                 completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim)
                 new_prices.append(completed)
             except Exception as e:
