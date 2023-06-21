@@ -36,6 +36,8 @@ parameter = {
     ,"sell_day":5
 }
 
+day_to_deploy = parameter["buy_day"]
+hour_to_deploy = 11
 positions = 20
 deploy = True
 alp = AlpacaApi()
