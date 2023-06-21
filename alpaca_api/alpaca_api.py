@@ -22,7 +22,7 @@ class AlpacaApi(object):
         return self.paper_trading_client.get_account()
     
     def paper_close_all(self):
-        return self.paper_trading_client.close_all_positions()
+        return self.paper_trading_client.close_all_positions(cancel_orders=False)
     
     def paper_market_order(self,ticker,amount):
         market_order_data = MarketOrderRequest(
@@ -40,7 +40,7 @@ class AlpacaApi(object):
         return self.live_trading_client.get_account()
     
     def live_close_all(self):
-        return self.live_trading_client.close_all_positions()
+        return self.live_trading_client.close_all_positions(cancel_orders=False)
     
     def live_market_order(self,ticker,amount):
         market_order_data = MarketOrderRequest(

@@ -28,13 +28,13 @@ class ABacktester(object):
             self.portfolio_class.db.store(self.table_name,trades)
         self.portfolio_class.db.disconnect()
     
-    def recommendation(self,sim,parameter):
+    def recommendation(self,sim,parameter,tyields):
         backtest_data = sim.copy().dropna()
         t = []
         final_data = backtest_data.copy()
         market_return = parameter["market_return"]
         final_data = final_data[final_data["day"]==parameter["buy_day"]-1]
-        final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),True)
+        final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),True,tyields)
         if parameter["rank"] == True:
             final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
         trades = self.recommendation_helper(final_data,parameter)

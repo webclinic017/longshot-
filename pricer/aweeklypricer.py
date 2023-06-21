@@ -15,9 +15,8 @@ class AWeeklyPricer(AIPricer):
         self.all_columns = self.factors + self.included_columns
         self.positions = 20 if asset_class.value == "stocks" else 1
         
-    def price_returns(self,ticker,current):
-        prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
-        ticker_sim = p.column_date_processing(prices)
+    def price_returns(self,ticker_sim,current):
+        ticker_sim = p.column_date_processing(ticker_sim)
         ticker_sim = ticker_sim.sort_values("date")
         ticker_sim["prev_close"] = ticker_sim["adjclose"].shift(1)
         ticker_sim["day"] = [x.weekday() for x in ticker_sim["date"]]

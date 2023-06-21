@@ -107,3 +107,11 @@ class ADatabase(IDatabase):
             return pd.DataFrame(list(data))
         except Exception as e:
             print(str(e))
+
+    def create_index(self,collection_name,column_name):
+        try:
+            db = self.client[self.name]
+            table = db[collection_name]
+            table.create_index(column_name)
+        except Exception as e:
+            print(str(e))

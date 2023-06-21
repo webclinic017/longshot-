@@ -6,10 +6,9 @@ class RequiredReturn(object):
     def __init__(self):
         self.name = "RR"
 
-    def returns(self,market_return,atime_horizon,simulation,current):
+    def returns(self,market_return,atime_horizon,simulation,current,yields):
         naming = atime_horizon.naming_convention
         n = atime_horizon.n
-        yields = return_prods.tyields()
         simulation = simulation.merge(yields[["year",naming,f"{naming}ly_yield"]],on=["year",naming],how="left")
         week_col = "adjclose" if current else "prev_close"
         start_col = "quarter_start" if naming == "quarter" else week_col
