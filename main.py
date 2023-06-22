@@ -38,7 +38,7 @@ parameter = {
 
 day_to_deploy = parameter["buy_day"]
 hour_to_deploy = 11
-positions = 20
+positions = 1
 deploy = True
 alp = AlpacaApi()
 start = (datetime.now() - timedelta(days=800)).strftime("%Y-%m-%d")
@@ -58,9 +58,10 @@ try:
     week = new_york_date.isocalendar()[1]
     hour = new_york_date.hour
     day = new_york_date.weekday()
+    year = new_york_date.year
     if day == day_to_deploy and hour == hour_to_deploy:
         ## Market Ops
-        closed_orders = alp.paper_close_all()
+        closed_orders = alp.live_close_all()
         closed_order_df = pd.DataFrame([json.loads(closed_order.json())["body"] for closed_order in closed_orders])
         if closed_order_df.index.size > 1:
             portfolio.db.cloud_connect()
@@ -119,7 +120,7 @@ try:
             portfolio.db.cloud_connect()
             portfolio.db.store("recs",final)
             portfolio.db.disconnect()
-            account = alp.paper_get_account()
+            account = alp.live_get_account()
             cash = float(account.cash) - 10
             # executing order
             order_data = []
@@ -127,7 +128,7 @@ try:
                 try:
                     ticker = row[1]["ticker"]
                     amount = round(cash / positions) 
-                    order_data.append(alp.paper_market_order(ticker,amount))
+                    order_data.append(alp.live_market_order(ticker,amount))
                     sleep(5)
                 except Exception as e:
                     portfolio.db.cloud_connect()
