@@ -44,7 +44,8 @@ class APortfolio(object):
             sims.append(ranker_sim)
         if self.classifier_class != None:
             classifier_sim = self.pull_classifier_sim()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","classification_prediction"]]
-            classifier_sim["classification_prediction"] = [int(x) for x in classifier_sim["classification_prediction"]]
+            classifier_sim.dropna(inplace=True)
+            classifier_sim["classification_prediction"] = [self.ameme(x) for x in classifier_sim["classification_prediction"]]
             sims.append(classifier_sim)
         for sim in sims:
             if sim.index.size > 0:
@@ -75,6 +76,13 @@ class APortfolio(object):
             self.ranker_class.db.disconnect()
             return sim
     
+    def ameme(self,x):
+        try:
+            return int(x)
+        except:
+            return 0
+        
+    
     def create_current_simulation(self):
         sims = []
         pricer_sim = self.pull_pricer_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","price_prediction"]]
@@ -85,7 +93,8 @@ class APortfolio(object):
             sims.append(ranker_sim)
         if self.classifier_class != None:
             classifier_sim = self.pull_classifier_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","classification_prediction"]]
-            classifier_sim["classification_prediction"] = [int(x) for x in classifier_sim["classification_prediction"]]
+            classifier_sim.dropna(inplace=True)
+            classifier_sim["classification_prediction"] = [self.ameme(x) for x in classifier_sim["classification_prediction"]]
             sims.append(classifier_sim)
         for sim in sims:
             if sim.index.size > 0:

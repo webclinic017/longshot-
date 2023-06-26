@@ -84,7 +84,8 @@ class ABacktester(object):
         test = sim[(sim["return_boolean"]==True)]
 
         if risk:
-            test = test[test["risk_boolean"] ==True]    
+            test = test[test["risk_boolean"] ==True]
+                
         if classification and "classification_prediction" in test.columns:
             test = test[test["classification_prediction"]==1.0]
                 

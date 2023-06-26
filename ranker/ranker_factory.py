@@ -3,6 +3,7 @@ from time_horizons.time_horizons import TimeHorizons
 from asset_classes.asset_classes import AssetClasses
 from ranker.earnings import Earnings
 from ranker.rolling import Rolling
+from ranker.fast_slow import FastSlow
 class RankerFactory(object):
 
     @classmethod
@@ -14,6 +15,10 @@ class RankerFactory(object):
                 result = Earnings()
             case ranker_list.WEEKLY_STOCK_ROLLING_RANKER:
                 result = Rolling(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
+            case ranker_list.WEEKLY_STOCK_FASTSLOW_RANKER:
+                result = FastSlow(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
+            case ranker_list.WEEKLY_CRYPTO_FASTSLOW_RANKER:
+                result = FastSlow(AssetClasses.CRYPTO,TimeHorizons.WEEKLY)
             case _:
                 result = None
         return result

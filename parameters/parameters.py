@@ -9,7 +9,7 @@ class Parameters(object):
         classifications = [True,False]
         market_returns = [1.15]
         shorts = [False]
-        ranks = [False]
+        ranks = [True,False]
         risks = [True]
         parameters = []
         buy_days = [1]
