@@ -22,6 +22,6 @@ class AWeeklyPricer(AIPricer):
         ticker_sim["day"] = [x.weekday() for x in ticker_sim["date"]]
         if not current:
             for i in range(1,6):
-                ticker_sim[f"return_{i}"] = (ticker_sim["adjopen"].shift(-i) - ticker_sim["adjclose"]) / ticker_sim["adjclose"]
+                ticker_sim[f"return_{i}"] = (ticker_sim["adjclose"].shift(-i) - ticker_sim["adjclose"]) / ticker_sim["adjclose"]
         ticker_sim["weekly_risk_return"] = (ticker_sim["adjclose"].shift(1) - ticker_sim["adjclose"].shift(6)) / ticker_sim["adjclose"].shift(6)
         return ticker_sim

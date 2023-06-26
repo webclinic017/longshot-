@@ -6,7 +6,7 @@ class Parameters(object):
     def parameters(self):
         values = [True]
         ceilings = [True]
-        classifications = [False]
+        classifications = [True,False]
         market_returns = [1.15]
         shorts = [False]
         ranks = [False]

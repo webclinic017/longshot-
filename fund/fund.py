@@ -2,7 +2,7 @@ from database.market import Market
 from database.sec import SEC
 from tqdm import tqdm
 import pandas as pd
-
+from returns.products import Products
 class Fund(object):
 
     def __init__(self,portfolios,backtest_start_date,backtest_end_date,current_start_date):
@@ -25,20 +25,9 @@ class Fund(object):
         for portfolio in self.portfolios:
             portfolio.create_historical_models()
     
-    def initialize_historical_backtesters(self):
-        for portfolio in self.portfolios:
-            portfolio.initialize_historical_backtester(self.backtest_start_date,self.backtest_end_date)
-    
     def initialize_backtesters(self):
         for portfolio in self.portfolios:
             portfolio.initialize_backtester(self.backtest_start_date,self.backtest_end_date)
-
-    def run_historical_backtest(self):
-        for portfolio in tqdm(self.portfolios):
-            sim = portfolio.create_simulation()
-            returns = portfolio.create_returns()
-            sim_returns = portfolio.merge_sim_returns(sim,returns)
-            portfolio.run_backtest(sim_returns)
     
     def run_recommendation(self):
         recs = []
@@ -51,12 +40,16 @@ class Fund(object):
             recs.append(rec)
         return recs
     
-    def run_backtest(self):
+    def run_backtest(self,market):
         for portfolio in tqdm(self.portfolios):
-            sim = portfolio.create_current_simulation()
-            returns = portfolio.create_returns()
-            sim_returns = portfolio.merge_sim_returns(sim,returns)
-            portfolio.run_backtest(sim_returns)
+            market.connect()
+            tyields = Products.tyields(market.retrieve("tyields"))
+            bench = Products.spy_bench(market.retrieve("spy"))
+            returns = portfolio.create_returns(market,bench,False)
+            market.disconnect()
+            sim = portfolio.create_simulation()
+            merged = portfolio.merge_sim_returns(sim,returns)
+            portfolio.run_backtest(merged,tyields)
     
     def reset(self):
         for portfolio in self.portfolios:

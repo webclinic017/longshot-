@@ -12,6 +12,8 @@ class ClassifierFactory(object):
                 result = None
             case classifier_list.WEEKLY_STOCK_SPECULATION_CLASSIFIER:
                 result =  SpeculationClassifier(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
+            case classifier_list.WEEKLY_CRYPTO_SPECULATION_CLASSIFIER:
+                result =  SpeculationClassifier(AssetClasses.CRYPTO,TimeHorizons.WEEKLY)
             case classifier_list.QUARTERLY_STOCK_FINANCIAL_CLASSIFIER:
                 result = FinancialClassifier(AssetClasses.STOCKS,TimeHorizons.QUARTERLY)
             case _:

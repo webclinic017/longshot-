@@ -115,32 +115,16 @@ class APortfolio(object):
             predictions = self.ranker_class.db.retrieve("predictions")
             self.ranker_class.db.disconnect()
             return predictions
-        
-    def create_returns(self):
-        new_prices = []
-        sp500 = self.pricer_class.sp500.copy()
-        sp500 = sp500.rename(columns={"Symbol":"ticker"})
-        tickers = ["BTC"] if self.pricer_class.asset_class == "crypto" else sp500["ticker"].unique()
-        for ticker in tickers:
-            try:
-                ticker_sim = self.pricer_class.price_returns(ticker,False)
-                completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim)
-                new_prices.append(completed)
-            except Exception as e:
-                print(str(e))
-                continue
-        price_returns = pd.concat(new_prices)
-        return price_returns
 
-    def create_current_returns(self,market,bench):
+    def create_returns(self,market,bench,current):
         new_prices = []
         sp500 = self.pricer_class.sp500.copy()
         sp500 = sp500.rename(columns={"Symbol":"ticker"})
-        tickers = ["BTC"] if self.pricer_class.asset_class == "crypto" else sp500["ticker"].unique()
+        tickers = ["BTC"] if self.pricer_class.asset_class.value == "crypto" else sp500["ticker"].unique()
         for ticker in tickers:
             try:
-                ticker_sim = market.retrieve_ticker_prices("stocks",ticker)
-                ticker_sim = self.pricer_class.price_returns(ticker_sim,True)
+                ticker_sim = market.retrieve_ticker_prices(self.pricer_class.asset_class.value,ticker)
+                ticker_sim = self.pricer_class.price_returns(ticker_sim,current)
                 completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim,bench)
                 new_prices.append(completed)
             except Exception as e:
@@ -155,12 +139,9 @@ class APortfolio(object):
     
     def backtest_rank(self,sim):
         return self.ranker_class.backtest_rank(sim)
-    
-    def initialize_historical_backtester(self,start_date,end_date):
-        self.backtester = ABacktester(self,False,start_date,end_date)
 
-    def run_backtest(self,simulation):
-        self.backtester.backtest(simulation)
+    def run_backtest(self,simulation,tyields):
+        self.backtester.backtest(simulation,tyields)
     
     def recommendation(self,simulation,parameter):
         return self.backtester.recommendation(simulation,parameter)

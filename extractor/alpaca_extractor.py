@@ -7,7 +7,7 @@ load_dotenv()
 token = os.getenv("TIINGO")
 
 ## api middle man to handle api requests with tiingo
-class TiingoExtractor(object):
+class AlpacaExtractor(object):
 
     @classmethod
     def extract(self,ticker,start,end):
@@ -38,7 +38,7 @@ class TiingoExtractor(object):
             }
             url = f"https://api.tiingo.com/tiingo/crypto/prices?tickers={crypto}usd,fldcbtc&startDate{start}&endDate={end}&resampleFreq=1Day"
             requestResponse = requests.get(url,headers=headers,params=params)
-            return pd.DataFrame(requestResponse.json()[0]["priceData"]).rename(columns={"close":"adjclose"})
+            return requestResponse
         except Exception as e:
             print(str(e))
 

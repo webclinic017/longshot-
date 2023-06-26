@@ -126,7 +126,7 @@ try:
         cash = float(account.cash) - 10
         # executing order
         order_data = []
-        for row in trades.iterrows():
+        for row in final.iterrows():
             try:
                 ticker = row[1]["ticker"]
                 amount = round(cash / positions) 
