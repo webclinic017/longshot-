@@ -1,5 +1,4 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 from database.market import Market
 from database.adatabase import ADatabase
 from datetime import datetime, timedelta
@@ -7,7 +6,6 @@ from tqdm import tqdm
 from extractor.tiingo_extractor import TiingoExtractor
 from extractor.forex_extractor import FOREXExtractor
 from extractor.fred_extractor import FREDExtractor
-# from time import sleep
 from processor.processor import Processor as p
 
 market = Market()

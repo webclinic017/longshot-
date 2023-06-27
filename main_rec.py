@@ -28,7 +28,6 @@ parameter = {
     ,"sell_day":5
 }
 
-positions = 20
 deploy = True
 
 start = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
@@ -41,6 +40,7 @@ portfolio = APortfolio(pricer_list.WEEKLY_STOCK_SPECULATION
 portfolio_ii = APortfolio(pricer_list.WEEKLY_CRYPTO_SPECULATION
                           ,classifier_list.NONE
                           ,ranker_list.NONE)
+
 portfolios = [portfolio,portfolio_ii]
 
 fund = Fund(portfolios,start,end,end)
@@ -59,11 +59,10 @@ sp500 = market.retrieve("sp500").rename(columns={"Symbol":"ticker"})
 tyields = Products.tyields(market.retrieve("tyields"))
 bench = Products.spy_bench(market.retrieve("spy"))
 for portfolio in fund.portfolios:
-        ## creating prediction data
     try:
-        portfolio = fund.portfolios[0]
         pricer_class = portfolio.pricer_class
         tickers = sp500["ticker"].unique() if pricer_class.asset_class.value == "stocks" else ["BTC"]
+        positions = 20 if pricer_class.asset_class.value == "stocks" else 1
         training_sets = []
         for ticker in tickers:
             try:
@@ -77,7 +76,6 @@ for portfolio in fund.portfolios:
         data = pd.concat(training_sets)
         training_data = data.dropna().copy().sort_values(["year","week"])
         market.disconnect()
-
         # making predictions
         pricer_class.db.cloud_connect()
         pricer_class.db.drop("predictions")
