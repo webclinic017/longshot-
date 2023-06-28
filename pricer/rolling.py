@@ -14,7 +14,6 @@ class Rolling(AWeeklyPricer):
         self.included_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
         self.included_live_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
         self.all_columns = self.factors + self.included_columns
-        self.positions = 20 if asset_class.value == "stocks" else 1
         self.isai = False
         
     def training_set(self,ticker,prices):

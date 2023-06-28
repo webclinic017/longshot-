@@ -84,5 +84,5 @@ for portfolio in fund.portfolios:
     except Exception as e:
             portfolio.db.cloud_connect()
             portfolio.db.store("iterations",pd.DataFrame([{"date":str(datetime.now()),"status":"incomplete"}]))
-            portfolio.db.store("errors",pd.DataFrame([{"date":str(datetime.now()),"error":str(e)}]))
+            portfolio.db.store("errors",pd.DataFrame([{"date":str(datetime.now()),"status":"trade","error":str(e)}]))
             portfolio.db.disconnect()

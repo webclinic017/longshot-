@@ -18,7 +18,6 @@ market.connect()
 start = market.retrieve_max_date("stocks")
 market.disconnect()
 end = datetime.now().strftime("%Y-%m-%d")
-print(start,end)
 
 market.connect()
 data = FOREXExtractor.extract(start,end)

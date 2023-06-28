@@ -30,7 +30,6 @@ class ABacktester(object):
     
     def recommendation(self,sim,parameter,tyields):
         backtest_data = sim.copy().dropna()
-        t = []
         final_data = backtest_data.copy()
         market_return = parameter["market_return"]
         final_data = final_data[final_data["day"]==parameter["buy_day"]-1]
@@ -38,8 +37,7 @@ class ABacktester(object):
         if parameter["rank"] == True:
             final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
         trades = self.recommendation_helper(final_data,parameter)
-        t.append(trades)
-        return t
+        return trades
     
     def backtest_helper(self,sim,parameter,start_date,end_date):
         value = parameter["value"]
