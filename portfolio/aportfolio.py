@@ -152,6 +152,9 @@ class APortfolio(object):
     def run_backtest(self,simulation,tyields):
         self.backtester.backtest(simulation,tyields)
     
+    def run_backtest_qa(self,simulation,tyields,parameter):
+        self.backtester.backtest_qa(simulation,tyields,parameter)
+    
     def recommendation(self,simulation,parameter):
         return self.backtester.recommendation(simulation,parameter)
         

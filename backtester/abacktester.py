@@ -27,6 +27,23 @@ class ABacktester(object):
             trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date)
             self.portfolio_class.db.store(self.table_name,trades)
         self.portfolio_class.db.disconnect()
+        
+    ##FINANCIALS DUN WORK NO MORE
+    def backtest_qa(self,sim,tyields,parameter):
+        self.portfolio_class.db.connect()
+        self.portfolio_class.db.drop(self.table_name)
+        backtest_data = sim.copy().dropna()
+        final_data = backtest_data.copy()
+        market_return = parameter["market_return"]
+        sell_day = parameter["sell_day"]
+        final_data["weekly_return"] = final_data[f"return_{sell_day}"]
+        final_data = final_data[final_data["day"]==parameter["buy_day"]]
+        final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),False,tyields)
+        if parameter["rank"] == True:
+            final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
+        trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date)
+        self.portfolio_class.db.store("qa_trades",trades)
+        self.portfolio_class.db.disconnect()
     
     def recommendation(self,sim,parameter,tyields):
         backtest_data = sim.copy().dropna()

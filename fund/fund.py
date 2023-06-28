@@ -51,6 +51,19 @@ class Fund(object):
             merged = portfolio.merge_sim_returns(sim,returns)
             portfolio.run_backtest(merged,tyields)
     
+    def run_backtest_qa(self,market,parameter):
+        for portfolio in tqdm(self.portfolios):
+            market.connect()
+            tyields = Products.tyields(market.retrieve("tyields"))
+            bench = Products.spy_bench(market.retrieve("spy"))
+            returns = portfolio.create_returns(market,bench,False)
+            market.disconnect()
+            portfolio.pricer_class.db.cloud_connect()
+            sim = portfolio.pricer_class.db.retrieve("predictions")
+            portfolio.pricer_class.db.disconnect()
+            merged = portfolio.merge_sim_returns(sim,returns)
+            portfolio.run_backtest_qa(merged,tyields,parameter)
+    
     def reset(self):
         for portfolio in self.portfolios:
             portfolio.reset()
