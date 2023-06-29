@@ -12,7 +12,6 @@ class ABacktester(object):
     ##FINANCIALS DUN WORK NO MORE
     def backtest(self,sim,tyields):
         self.portfolio_class.db.connect()
-        self.portfolio_class.db.drop(self.table_name)
         backtest_data = sim.copy().dropna()
         parameters = params.parameters()
         for parameter in parameters:
@@ -31,7 +30,6 @@ class ABacktester(object):
     ##FINANCIALS DUN WORK NO MORE
     def backtest_qa(self,sim,tyields,parameter):
         self.portfolio_class.db.connect()
-        self.portfolio_class.db.drop(self.table_name)
         backtest_data = sim.copy().dropna()
         final_data = backtest_data.copy()
         market_return = parameter["market_return"]

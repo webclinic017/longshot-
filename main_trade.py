@@ -40,8 +40,11 @@ for portfolio in fund.portfolios:
         ## setup
         pricer_class = portfolio.pricer_class
         positions = 20 if pricer_class.asset_class.value == "stocks" else 1
+        portfolio.db.cloud_connect()
+        final = portfolio.db.retrieve("recs")
+        portfolio.db.disconnect()
 
-        ## sells
+        # sells
         closed_orders = alp.paper_close_all()
         closed_order_df = pd.DataFrame([json.loads(closed_order.json())["body"] for closed_order in closed_orders])
         if closed_order_df.index.size > 1:
@@ -50,12 +53,12 @@ for portfolio in fund.portfolios:
             portfolio.db.disconnect()
         sleep(300)
         
-        portfolio.db.cloud_connect()
-        final = portfolio.db.retrieve("recs")
-        portfolio.db.disconnect()
-        final = final[final["week"]==week]
         ## buys
         if final.index.size > 0:
+            final = final[final["week"]==week].sort_values("weekly_delta",ascending=False).head(positions)
+            portfolio.db.cloud_connect()
+            portfolio.db.store("proposals",final)
+            portfolio.db.disconnect()
             account = alp.paper_get_account()
             cash = float(account.cash) - 10
             # executing order
@@ -75,7 +78,7 @@ for portfolio in fund.portfolios:
             portfolio.db.store("orders",order_dicts)
             portfolio.db.disconnect()
         
-        ## logging
+        # logging
         portfolio.db.cloud_connect()
         portfolio.db.store("iterations",pd.DataFrame([{"date":str(datetime.now()),"status":"complete"}]))
         portfolio.db.disconnect()
