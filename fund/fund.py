@@ -3,7 +3,7 @@ from database.sec import SEC
 from tqdm import tqdm
 import pandas as pd
 from returns.products import Products
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 
 class Fund(object):
 
@@ -32,8 +32,6 @@ class Fund(object):
             portfolio.initialize_backtester(self.backtest_start_date,self.backtest_end_date)
     
     def run_recommendation(self,parameter):
-        new_york_date = datetime.now(tz=timezone(offset=timedelta(hours=-4)))
-        week = new_york_date.isocalendar()[1]
         self.market.cloud_connect()
         sp500 = self.market.retrieve("sp500").rename(columns={"Symbol":"ticker"})
         tyields = Products.tyields(self.market.retrieve("tyields"))
@@ -41,26 +39,20 @@ class Fund(object):
         self.market.disconnect()
         for portfolio in self.portfolios:
             try:
-
-                # making returns
                 self.market.cloud_connect()
                 returns = portfolio.create_returns(self.market,bench,True)
                 self.market.disconnect()
-
                 portfolio.pricer_class.db.cloud_connect()
                 sim = portfolio.pricer_class.db.retrieve("predictions").drop("adjclose",axis=1,errors="ignore")
                 portfolio.pricer_class.db.disconnect()
-
-                # recommendations
                 merged = portfolio.merge_sim_returns(sim,returns)
                 merged = merged.sort_values(["year","week","day"]).dropna()
-                rec = portfolio.backtester.recommendation(merged.copy(),parameter,tyields)
-                rec_filtered = rec[(rec["week"]==week)].sort_values("weekly_delta",ascending=False)
-                trades = rec_filtered.merge(sp500[["ticker","Security","GICS Sector"]],on="ticker")
-                final = trades[["year","week","ticker","Security","GICS Sector","weekly_delta","weekly_delta_sign"]]
-
+                rec = portfolio.run_recommendation(merged.copy(),tyields,parameter)
+                trades = rec.merge(sp500[["ticker","Security","GICS Sector"]],on="ticker")
+                final = trades[["year","week","ticker","Security","GICS Sector","position","weekly_delta","weekly_delta_sign"]]
                 if final.index.size > 0:
                     portfolio.db.cloud_connect()
+                    portfolio.db.drop("recs")
                     portfolio.db.store("recs",final)
                     portfolio.db.disconnect()
 
@@ -68,31 +60,43 @@ class Fund(object):
                 portfolio.db.cloud_connect()
                 portfolio.db.store("errors",pd.DataFrame([{"date":str(datetime.now()),"status":"recommendations","error":str(e)}]))
                 portfolio.db.disconnect()
-
     
-    def run_backtest(self,market):
+    def run_backtest_qa(self,parameter):
+        self.market.connect()
+        tyields = Products.tyields(self.market.retrieve("tyields"))
+        bench = Products.spy_bench(self.market.retrieve("spy"))
+        self.market.disconnect()
         for portfolio in tqdm(self.portfolios):
-            market.connect()
-            tyields = Products.tyields(market.retrieve("tyields"))
-            bench = Products.spy_bench(market.retrieve("spy"))
-            returns = portfolio.create_returns(market,bench,False)
-            market.disconnect()
-            sim = portfolio.create_simulation()
-            merged = portfolio.merge_sim_returns(sim,returns)
-            portfolio.run_backtest(merged,tyields)
-    
-    def run_backtest_qa(self,market,parameter):
-        for portfolio in tqdm(self.portfolios):
-            market.connect()
-            tyields = Products.tyields(market.retrieve("tyields"))
-            bench = Products.spy_bench(market.retrieve("spy"))
-            returns = portfolio.create_returns(market,bench,False)
-            market.disconnect()
+            self.market.connect()
+            returns = portfolio.create_returns(self.market,bench,False)
+            self.market.disconnect()
             portfolio.pricer_class.db.cloud_connect()
-            sim = portfolio.pricer_class.db.retrieve("predictions")
+            sim = portfolio.pricer_class.db.retrieve("predictions").drop("adjclose",axis=1,errors="ignore")
             portfolio.pricer_class.db.disconnect()
             merged = portfolio.merge_sim_returns(sim,returns)
-            portfolio.run_backtest_qa(merged,tyields,parameter)
+            merged = merged.sort_values(["year","week","day"]).dropna()
+            final = portfolio.run_backtest_qa(merged,tyields,parameter)
+            if final.index.size > 0:
+                portfolio.db.cloud_connect()
+                portfolio.db.drop("recs_qa")
+                portfolio.db.store("recs_qa",final)
+                portfolio.db.disconnect()
+    
+    def run_backtest(self):
+        self.market.connect()
+        tyields = Products.tyields(self.market.retrieve("tyields"))
+        bench = Products.spy_bench(self.market.retrieve("spy"))
+        self.market.disconnect()
+        for portfolio in tqdm(self.portfolios):
+            self.market.connect()
+            returns = portfolio.create_returns(self.market,bench,False)
+            self.market.disconnect()
+            portfolio.pricer_class.db.connect()
+            sim = portfolio.pricer_class.db.retrieve("sim")
+            portfolio.pricer_class.db.disconnect()
+            merged = portfolio.merge_sim_returns(sim,returns)
+            merged = merged.sort_values(["year","week","day"]).dropna()
+            portfolio.run_backtest(merged,tyields)
     
     def reset(self):
         for portfolio in self.portfolios:

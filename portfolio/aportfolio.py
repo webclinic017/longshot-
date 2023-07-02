@@ -6,9 +6,8 @@ from risk.beta_risk import BetaRisk
 from returns.required_returns import RequiredReturn
 from database.adatabase import ADatabase
 from backtester.abacktester import ABacktester
+from parameters.parameters import Parameters as params
 import pandas as pd
-from datetime import datetime, timedelta
-from tqdm import tqdm
 
 class APortfolio(object):
 
@@ -82,7 +81,6 @@ class APortfolio(object):
         except:
             return 0
         
-    
     def create_current_simulation(self):
         sims = []
         pricer_sim = self.pull_pricer_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","price_prediction"]]
@@ -150,13 +148,15 @@ class APortfolio(object):
         return self.ranker_class.backtest_rank(sim)
 
     def run_backtest(self,simulation,tyields):
-        self.backtester.backtest(simulation,tyields)
-    
+        parameters = params.parameters()
+        for parameter in parameters:
+            self.backtester.backtest(simulation,tyields,parameter,False)
+             
     def run_backtest_qa(self,simulation,tyields,parameter):
-        self.backtester.backtest_qa(simulation,tyields,parameter)
+        return self.backtester.backtest(simulation,tyields,parameter,True)
     
-    def recommendation(self,simulation,parameter):
-        return self.backtester.recommendation(simulation,parameter)
+    def run_recommendation(self,simulation,tyields,parameter):
+        return self.backtester.recommendation(simulation,tyields,parameter)
         
     def pull_historical_trades(self):
         self.db.connect()

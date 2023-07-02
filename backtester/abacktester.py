@@ -1,5 +1,4 @@
 import pandas as pd
-from parameters.parameters import Parameters as params
 class ABacktester(object):
 
     def __init__(self,portfolio_class,current,start_date,end_date):
@@ -10,25 +9,7 @@ class ABacktester(object):
         self.table_name = "trades" if self.current else "historical_trades"
     
     ##FINANCIALS DUN WORK NO MORE
-    def backtest(self,sim,tyields):
-        self.portfolio_class.db.connect()
-        backtest_data = sim.copy().dropna()
-        parameters = params.parameters()
-        for parameter in parameters:
-            final_data = backtest_data.copy()
-            market_return = parameter["market_return"]
-            sell_day = parameter["sell_day"]
-            final_data["weekly_return"] = final_data[f"return_{sell_day}"]
-            final_data = final_data[final_data["day"]==parameter["buy_day"]]
-            final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),False,tyields)
-            if parameter["rank"] == True:
-                final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
-            trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date)
-            self.portfolio_class.db.store(self.table_name,trades)
-        self.portfolio_class.db.disconnect()
-        
-    ##FINANCIALS DUN WORK NO MORE
-    def backtest_qa(self,sim,tyields,parameter):
+    def backtest(self,sim,tyields,parameter,qa):
         self.portfolio_class.db.connect()
         backtest_data = sim.copy().dropna()
         final_data = backtest_data.copy()
@@ -40,10 +21,13 @@ class ABacktester(object):
         if parameter["rank"] == True:
             final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
         trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date)
-        self.portfolio_class.db.store("qa_trades",trades)
-        self.portfolio_class.db.disconnect()
-    
-    def recommendation(self,sim,parameter,tyields):
+        if not qa:
+            self.portfolio_class.db.store(self.table_name,trades)
+            self.portfolio_class.db.disconnect()
+        else:
+            return trades
+        
+    def recommendation(self,sim,tyields,parameter):
         backtest_data = sim.copy().dropna()
         final_data = backtest_data.copy()
         market_return = parameter["market_return"]
@@ -128,6 +112,7 @@ class ABacktester(object):
         ceiling = parameter["ceiling"]
         classification = parameter["classification"]
         short = parameter["short"]
+        risk = parameter["risk"]
         naming = self.portfolio_class.pricer_class.time_horizon_class.naming_convention
         positions = self.portfolio_class.pricer_class.positions
         ## optimizing
@@ -144,7 +129,10 @@ class ABacktester(object):
         sim["return_boolean"] = sim[f"{naming}ly_delta"] > sim[f"{naming}ly_rrr"]
         ##weekly logic
 
-        test = sim[(sim["return_boolean"]==True) & (sim["risk_boolean"]==True)]
+        test = sim[(sim["return_boolean"]==True)]
+
+        if risk:
+            test = test[test["risk_boolean"] ==True]
         
         if classification and "classification_prediction" in test.columns:
             test = test[test["classification_prediction"]==1.0]

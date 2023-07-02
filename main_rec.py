@@ -39,5 +39,4 @@ portfolios = [portfolio,portfolio_ii]
 fund = Fund(portfolios,start,end,end)
 fund.initialize_portfolios()
 fund.initialize_backtesters()
-
 fund.run_recommendation(parameter)
