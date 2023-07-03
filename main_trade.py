@@ -18,16 +18,17 @@ alp = AlpacaApi()
 start = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
 end = datetime.now().strftime("%Y-%m-%d")
 
-portfolio = APortfolio(pricer_list.WEEKLY_STOCK_SPECULATION
+portfolio = APortfolio(pricer_list.WEEKLY_STOCK_ROLLING
                           ,classifier_list.NONE
                           ,ranker_list.NONE)
 
-portfolio_ii = APortfolio(pricer_list.WEEKLY_CRYPTO_SPECULATION
+portfolio_ii = APortfolio(pricer_list.WEEKLY_CRYPTO_ROLLING
                           ,classifier_list.NONE
                           ,ranker_list.NONE)
 
-portfolios = [portfolio,portfolio_ii]
-
+portfolios = []
+portfolios.append(portfolio)
+portfolios.append(portfolio_ii)
 fund = Fund(portfolios,start,end,end)
 
 fund.initialize_portfolios()

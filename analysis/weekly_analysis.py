@@ -20,8 +20,8 @@ class WeeklyAnalysis(object):
         cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
         cumulative["return"] = cumulative["pv"].pct_change().fillna(1)
         cumulative["beta"] = cumulative[["return","bench_weekly_return"]].cov().iloc[0][1]/cumulative["weekly_variance"].iloc[-1]
-        cumulative["rrr"] = tyields["weekly_yield"].iloc[-1] + cumulative["beta"].iloc[-1]*(cumulative["bench"].iloc[-1]-tyields["weekly_yield"].iloc[-1])
-        cumulative["sharpe"] = (cumulative["pv"] - tyields["weekly_yield"].iloc[-1]) / cumulative["beta"].iloc[-1]
+        cumulative["rrr"] = tyields["weekly_yield"].mean() + cumulative["beta"].mean()*(cumulative["bench"].mean()-tyields["weekly_yield"].mean())
+        cumulative["sharpe"] = (cumulative["pv"] - tyields["weekly_yield"].mean()) / cumulative["beta"].mean()
         for index_stuff in indexer:
             cumulative[index_stuff] = parameter[index_stuff]
         return cumulative

@@ -31,7 +31,7 @@ class Fund(object):
         for portfolio in self.portfolios:
             portfolio.initialize_backtester(self.backtest_start_date,self.backtest_end_date)
     
-    def run_recommendation(self,parameter):
+    def run_recommendation(self):
         self.market.cloud_connect()
         sp500 = self.market.retrieve("sp500").rename(columns={"Symbol":"ticker"})
         tyields = Products.tyields(self.market.retrieve("tyields"))
@@ -39,6 +39,7 @@ class Fund(object):
         self.market.disconnect()
         for portfolio in self.portfolios:
             try:
+                parameter = portfolio.parameter
                 self.market.cloud_connect()
                 returns = portfolio.create_returns(self.market,bench,True)
                 self.market.disconnect()

@@ -17,26 +17,45 @@ parameter = {
     ,"classification":False
     ,"rank":False
     ,"short":False
-    ,"risk":True
-    ,"market_return":1.5
+    ,"risk":False
+    ,"market_return":1.15
     ,"buy_day":1
-    ,"sell_day":5
+    ,"sell_day":15
+    ,"floor_value":1.0
+}
+
+btc_parameter = {
+    "value":True
+    ,"ceiling":True
+    ,"classification":False
+    ,"rank":False
+    ,"short":False
+    ,"risk":False
+    ,"market_return":1.15
+    ,"buy_day":1
+    ,"sell_day":20
+    ,"floor_value":0.5
 }
 
 start = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
 end = datetime.now().strftime("%Y-%m-%d")
 
-portfolio = APortfolio(pricer_list.WEEKLY_STOCK_SPECULATION
+portfolio = APortfolio(pricer_list.WEEKLY_STOCK_ROLLING
                           ,classifier_list.NONE
                           ,ranker_list.NONE)
+portfolio.load_optimal_parameter(parameter)
 
-portfolio_ii = APortfolio(pricer_list.WEEKLY_CRYPTO_SPECULATION
+portfolio_ii = APortfolio(pricer_list.WEEKLY_CRYPTO_ROLLING
                           ,classifier_list.NONE
                           ,ranker_list.NONE)
+portfolio_ii.load_optimal_parameter(parameter)
 
-portfolios = [portfolio,portfolio_ii]
+portfolios = []
+portfolios.append(portfolio)
+portfolios.append(portfolio_ii)
+fund = Fund(portfolios,start,end,end)
 
 fund = Fund(portfolios,start,end,end)
 fund.initialize_portfolios()
 fund.initialize_backtesters()
-fund.run_recommendation(parameter)
+fund.run_recommendation()

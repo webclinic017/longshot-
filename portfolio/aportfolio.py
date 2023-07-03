@@ -24,6 +24,9 @@ class APortfolio(object):
         self.acronyms = ["".join([subname[0] for subname in x.split("_")]) for x in self.names]
         self.name = "_".join(self.acronyms).lower()
         self.db = ADatabase(self.name)
+    
+    def load_optimal_parameter(self,parameter):
+        self.parameter = parameter
 
     def initialize(self,backtest_start_date,backtest_end_date,current_start_date):
         self.backtest_start_date = backtest_start_date
