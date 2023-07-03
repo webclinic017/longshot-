@@ -7,7 +7,7 @@ class Parameters(object):
         values = [True]
         ceilings = [True]
         classifications = [False]
-        market_returns = [1.15]
+        market_returns = [1.15,1.5,2,3]
         shorts = [False]
         ranks = [False]
         risks = [True]

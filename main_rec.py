@@ -18,7 +18,7 @@ parameter = {
     ,"rank":False
     ,"short":False
     ,"risk":True
-    ,"market_return":1.15
+    ,"market_return":1.5
     ,"buy_day":1
     ,"sell_day":5
 }
