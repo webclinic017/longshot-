@@ -61,16 +61,25 @@ for portfolio in fund.portfolios:
         market.disconnect()
 
         # making predictions
-        pricer_class.db.cloud_connect()
-        pricer_class.db.drop("predictions")
-        prediction_set = training_data[training_data["year"]==year].reset_index(drop=True)
-        models = pricer_class.db.retrieve("models")
-        stuff = modeler_strat.recommend(models,prediction_set,pricer_class.factors)
-        stuff = stuff.rename(columns={"prediction":f"price_prediction"})
-        stuff = pricer_class.sim_processor(stuff)
-        relevant_columns = list(set(list(stuff.columns)) - set(pricer_class.factors))
-        pricer_class.db.store("predictions",stuff[relevant_columns])
-        pricer_class.db.disconnect()
+        if pricer_class.isai:
+            pricer_class.db.cloud_connect()
+            pricer_class.db.drop("predictions")
+            prediction_set = training_data[training_data["year"]==year].reset_index(drop=True)
+            models = pricer_class.db.retrieve("models")
+            stuff = modeler_strat.recommend(models,prediction_set,pricer_class.factors)
+            stuff = stuff.rename(columns={"prediction":f"price_prediction"})
+            stuff = pricer_class.sim_processor(stuff)
+            relevant_columns = list(set(list(stuff.columns)) - set(pricer_class.factors))
+            pricer_class.db.store("predictions",stuff[relevant_columns])
+            pricer_class.db.disconnect()
+        else:
+            pricer_class.db.cloud_connect()
+            pricer_class.db.drop("predictions")
+            prediction_set = training_data[training_data["year"]==year].reset_index(drop=True)
+            stuff = pricer_class.sim_processor(prediction_set)
+            relevant_columns = list(set(list(stuff.columns)) - set(pricer_class.factors))
+            pricer_class.db.store("predictions",stuff[relevant_columns])
+            pricer_class.db.disconnect()
 
     except Exception as e:
             portfolio.db.cloud_connect()

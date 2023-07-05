@@ -33,14 +33,13 @@ class ABacktester(object):
         final_data = backtest_data.copy()
         market_return = parameter["market_return"]
         sell_day = parameter["sell_day"]
-        final_data["weekly_return"] = final_data[f"return_{sell_day}"]
         mod_val = int(sell_day / 5)
         final_data = final_data[final_data["week"] % mod_val == 0]
         final_data = final_data[final_data["day"]==parameter["buy_day"]-1]
         final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),True,tyields)
         if parameter["rank"] == True:
             final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
-        trades = self.backtest_helper(final_data,parameter,True)
+        trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date,True)
         return trades
     
     def backtest_return_helper(self,sim,naming):
@@ -79,11 +78,13 @@ class ABacktester(object):
             return_column = "returns"
         else:
             return_column = "short_returns"
-
+        
+        columns = ["year",naming,"ticker",f"{naming}ly_delta",f"{naming}ly_delta_sign"]
         if not current:
             sim = self.backtest_return_helper(sim,naming)
             sim["actual_returns"] = sim[return_column]
-        
+            columns.append("actual_returns")
+
         sim["risk_boolean"] = sim[f"{naming}ly_beta"] <= sim[f"{naming}ly_beta"].mean()
         sim["return_boolean"] = sim[f"{naming}ly_delta"] > sim[f"{naming}ly_rrr"]
         
@@ -102,9 +103,8 @@ class ABacktester(object):
         ledgers = []
 
         ## ledger creation
-        stuff = ["year",naming,"ticker",f"{naming}ly_delta",f"{naming}ly_delta_sign","actual_returns"]
         for i in range(positions):    
-            ledger = test.sort_values(["year",naming,f"{naming}ly_delta"])[stuff].groupby(["year",naming],sort=False).nth(-i-1)
+            ledger = test.sort_values(["year",naming,f"{naming}ly_delta"])[columns].groupby(["year",naming],sort=False).nth(-i-1)
             ledger["position"] = i
             ledgers.append(ledger)
         final = pd.concat(ledgers).reset_index()

@@ -37,8 +37,8 @@ btc_parameter = {
     ,"floor_value":0.5
 }
 
-start = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
-end = datetime.now().strftime("%Y-%m-%d")
+start = datetime(datetime.now().year,1,1)
+end = datetime.now()
 
 portfolio = APortfolio(pricer_list.WEEKLY_STOCK_ROLLING
                           ,classifier_list.NONE

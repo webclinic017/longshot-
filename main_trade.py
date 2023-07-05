@@ -22,19 +22,28 @@ portfolio = APortfolio(pricer_list.WEEKLY_STOCK_ROLLING
                           ,classifier_list.NONE
                           ,ranker_list.NONE)
 
-portfolio_ii = APortfolio(pricer_list.WEEKLY_CRYPTO_ROLLING
-                          ,classifier_list.NONE
-                          ,ranker_list.NONE)
+# portfolio_ii = APortfolio(pricer_list.WEEKLY_CRYPTO_ROLLING
+#                           ,classifier_list.NONE
+#                           ,ranker_list.NONE)
 
 portfolios = []
 portfolios.append(portfolio)
-portfolios.append(portfolio_ii)
+# portfolios.append(portfolio_ii)
 fund = Fund(portfolios,start,end,end)
 
 fund.initialize_portfolios()
 new_york_date = datetime.now(tz=timezone(offset=timedelta(hours=-4)))
 year = new_york_date.year
 week = new_york_date.isocalendar()[1]
+
+        # sells
+closed_orders = alp.paper_close_all()
+# closed_order_df = pd.DataFrame([json.loads(closed_order.json())["body"] for closed_order in closed_orders])
+# if closed_order_df.index.size > 1:
+#     portfolio.db.cloud_connect()
+#     portfolio.db.store("orders",closed_order_df)
+#     portfolio.db.disconnect()
+sleep(300)
 
 for portfolio in fund.portfolios:
     try:
@@ -45,15 +54,6 @@ for portfolio in fund.portfolios:
         final = portfolio.db.retrieve("recs")
         portfolio.db.disconnect()
 
-        # sells
-        closed_orders = alp.paper_close_all()
-        closed_order_df = pd.DataFrame([json.loads(closed_order.json())["body"] for closed_order in closed_orders])
-        if closed_order_df.index.size > 1:
-            portfolio.db.cloud_connect()
-            portfolio.db.store("orders",closed_order_df)
-            portfolio.db.disconnect()
-        sleep(300)
-        
         ## buys
         if final.index.size > 0:
             final = final[final["week"]==week].sort_values("weekly_delta",ascending=False).head(positions)
@@ -67,7 +67,7 @@ for portfolio in fund.portfolios:
             for row in final.iterrows():
                 try:
                     ticker = "BTC/USD" if row[1]["ticker"] == "BTC" else row[1]["ticker"] 
-                    amount = round(cash / (positions + 1)) if pricer_class.asset_class.value == "stocks" else round(cash/positions) 
+                    amount = round(cash / (positions)) 
                     order_data.append(alp.paper_market_order(ticker,amount))
                     sleep(1)
                 except Exception as e:
