@@ -1,34 +1,14 @@
 from datetime import datetime, timezone, timedelta
+import pandas as pd
+
 from database.market import Market
 from processor.processor import Processor as p
 from modeler_strats.universal_modeler import UniversalModeler
-from datetime import datetime
-from fund.fund import Fund
-from pricer.pricer import Pricer as pricer_list
-from ranker.ranker import Ranker as ranker_list
-from classifier.classifier import Classifier as classifier_list
-from portfolio.aportfolio import APortfolio
-import pandas as pd
+from main_fund import MainFund as mf
 from processor.processor import Processor as p
 
 market = Market()
-start = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
-end = datetime.now().strftime("%Y-%m-%d")
-
-portfolio = APortfolio(pricer_list.WEEKLY_STOCK_ROLLING
-                          ,classifier_list.NONE
-                          ,ranker_list.NONE)
-
-portfolio_ii = APortfolio(pricer_list.WEEKLY_CRYPTO_ROLLING
-                          ,classifier_list.NONE
-                          ,ranker_list.NONE)
-
-portfolios = []
-portfolios.append(portfolio)
-portfolios.append(portfolio_ii)
-fund = Fund(portfolios,start,end,end)
-
-fund.initialize_portfolios()
+fund = mf.load_fund()
 modeler_strat = UniversalModeler()
 
 hour_to_deploy = 11

@@ -36,6 +36,9 @@ class AlpacaApi(object):
                )
         return market_order
     
+    def paper_close_btc(self):
+        return self.paper_trading_client.close_position("BTC/USD")
+    
     def live_get_account(self):
         return self.live_trading_client.get_account()
     

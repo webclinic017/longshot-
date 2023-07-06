@@ -1,49 +1,18 @@
 from time import sleep
 from datetime import datetime, timezone, timedelta
 from alpaca_api.alpaca_api import AlpacaApi
-from database.market import Market
-from datetime import datetime
-from fund.fund import Fund
-from pricer.pricer import Pricer as pricer_list
-from ranker.ranker import Ranker as ranker_list
-from classifier.classifier import Classifier as classifier_list
-from portfolio.aportfolio import APortfolio
+
+from main_fund import MainFund as mf
+
 import pandas as pd
 import json
 
-market = Market()
 alp = AlpacaApi()
 
-
-start = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
-end = datetime.now().strftime("%Y-%m-%d")
-
-portfolio = APortfolio(pricer_list.WEEKLY_STOCK_ROLLING
-                          ,classifier_list.NONE
-                          ,ranker_list.NONE)
-
-# portfolio_ii = APortfolio(pricer_list.WEEKLY_CRYPTO_ROLLING
-#                           ,classifier_list.NONE
-#                           ,ranker_list.NONE)
-
-portfolios = []
-portfolios.append(portfolio)
-# portfolios.append(portfolio_ii)
-fund = Fund(portfolios,start,end,end)
-
-fund.initialize_portfolios()
+fund = mf.load_fund()
 new_york_date = datetime.now(tz=timezone(offset=timedelta(hours=-4)))
 year = new_york_date.year
 week = new_york_date.isocalendar()[1]
-
-        # sells
-closed_orders = alp.paper_close_all()
-# closed_order_df = pd.DataFrame([json.loads(closed_order.json())["body"] for closed_order in closed_orders])
-# if closed_order_df.index.size > 1:
-#     portfolio.db.cloud_connect()
-#     portfolio.db.store("orders",closed_order_df)
-#     portfolio.db.disconnect()
-sleep(300)
 
 for portfolio in fund.portfolios:
     try:
@@ -53,9 +22,9 @@ for portfolio in fund.portfolios:
         portfolio.db.cloud_connect()
         final = portfolio.db.retrieve("recs")
         portfolio.db.disconnect()
-
+        buy_boolean = week % int(portfolio.parameter["sell_day"] / 5) == 0
         ## buys
-        if final.index.size > 0:
+        if final.index.size > 0 and buy_boolean:
             final = final[final["week"]==week].sort_values("weekly_delta",ascending=False).head(positions)
             portfolio.db.cloud_connect()
             portfolio.db.store("proposals",final)
