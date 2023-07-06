@@ -90,10 +90,14 @@ class ABacktester(object):
         
         ##weekly logic
         test = sim.copy()
-        if risk:
+        if risk == "rrr":
             test = sim[(sim["return_boolean"]==True)]
             test = test[test["risk_boolean"] ==True]
-                
+        elif risk == "flat":
+            test = sim[(sim[f"{naming}ly_delta"]>=0.05)]
+        else:
+            test = test.copy()
+
         if classification and "classification_prediction" in test.columns:
             test = test[test["classification_prediction"]==1.0]
                 

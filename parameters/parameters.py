@@ -10,11 +10,11 @@ class Parameters(object):
         market_returns = [1.15]
         shorts = [False]
         ranks = [False]
-        risks = [True,False]
+        risks = ["flat","rrr","none"]
         parameters = []
         buy_days = [1]
         sell_days = [5,10,15,20]
-        floor_values= [0.1,0.25,0.5,1]
+        floor_values= [0.5,1]
         for value in values:
             for ceiling in ceilings:
                 for classification in classifications:

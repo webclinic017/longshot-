@@ -17,7 +17,7 @@ parameter = {
     ,"classification":False
     ,"rank":False
     ,"short":False
-    ,"risk":False
+    ,"risk":"none"
     ,"market_return":1.15
     ,"buy_day":1
     ,"sell_day":15
