@@ -1,7 +1,6 @@
 import math
 import numpy as np
-from returns.products import Products as return_prods
-from datetime import datetime
+
 class RequiredReturn(object):
     def __init__(self):
         self.name = "RR"

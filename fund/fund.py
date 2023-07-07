@@ -88,8 +88,15 @@ class Fund(object):
                 portfolio.db.connect()
                 for parameter in parameters:         
                     trades = portfolio.run_backtest(self.market,merged,parameter,False)
-                    portfolio.store("trades",trades)
+                    portfolio.db.store("trades",trades)
                 portfolio.db.disconnect()
+                for key in parameter.keys():
+                    try:
+                        portfolio.db.connect()
+                        portfolio.db.create_index("trades",key)
+                        portfolio.db.disconnect()
+                    except Exception as e:
+                        print(str(e),key)
             except Exception as e:
                 print(str(e))
     

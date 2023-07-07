@@ -5,7 +5,7 @@ class WeeklyAnalysis(object):
 
     ## converting trade data into portfolio data and performance data
     @classmethod
-    def trade_analysis(self,indexer,ledger,positions,parameter,tyields,bench_returns):
+    def trade_analysis(self,ledger,positions,tyields,bench_returns):
         portfolio = ledger.pivot_table(index=["year","week"],columns="position",values="actual_returns").fillna(1).reset_index()
         counted_columns = [x for x in range(int(ledger["position"].max()+1))]
         for col in range(positions):
@@ -22,8 +22,6 @@ class WeeklyAnalysis(object):
         cumulative["beta"] = cumulative[["return","bench_weekly_return"]].cov().iloc[0][1]/cumulative["weekly_variance"].iloc[-1]
         cumulative["rrr"] = tyields["weekly_yield"].mean() + cumulative["beta"].mean()*(cumulative["bench"].mean()-tyields["weekly_yield"].mean())
         cumulative["sharpe"] = (cumulative["pv"] - tyields["weekly_yield"].mean()) / cumulative["beta"].mean()
-        for index_stuff in indexer:
-            cumulative[index_stuff] = parameter[index_stuff]
         return cumulative
     
     @classmethod
