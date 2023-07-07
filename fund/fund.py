@@ -31,7 +31,17 @@ class Fund(object):
     def initialize_backtesters(self):
         for portfolio in self.portfolios:
             portfolio.initialize_backtester(self.backtest_start_date,self.backtest_end_date)
-
+    
+    def pull_recommendation(self):
+        recs = []
+        for portfolio in self.portfolios:
+            portfolio.db.cloud_connect()
+            rec = portfolio.db.retrieve("recs")
+            portfolio.db.disconnect()
+            rec["portfolio"] = portfolio.name
+            recs.append(rec)
+        return recs
+    
     def run_recommendation(self):
         self.market.cloud_connect()
         sp500 = self.market.retrieve("sp500").rename(columns={"Symbol":"ticker"})
