@@ -6,8 +6,8 @@ from risk.beta_risk import BetaRisk
 from returns.required_returns import RequiredReturn
 from database.adatabase import ADatabase
 from backtester.abacktester import ABacktester
-from parameters.parameters import Parameters as params
 import pandas as pd
+from returns.products import Products
 
 class APortfolio(object):
 
@@ -147,20 +147,30 @@ class APortfolio(object):
         merged = sim.merge(returns,on=["year",self.pricer_class.time_horizon_class.naming_convention,"ticker"],how="left")
         return merged
     
-    def backtest_rank(self,sim):
-        return self.ranker_class.backtest_rank(sim)
-
-    def run_backtest(self,simulation,tyields):
-        parameters = params.parameters()
-        for parameter in parameters:
-            self.backtester.backtest(simulation,tyields,parameter,False)
+    def run_backtest(self,market,simulation,parameter,rec):
+        tyield_name = parameter["tyields"]
+        market.connect()
+        tyields = market.retrieve(tyield_name)
+        market.disconnect()
+        tyields = Products.tyields(tyields)
+        return self.backtester.backtest(simulation,tyields,parameter,rec)
              
-    def run_backtest_qa(self,simulation,tyields,parameter):
-        return self.backtester.backtest(simulation,tyields,parameter,True)
+    # def run_recommendation(self,market,simulation,parameter):
+    #     tyield_name = parameter["tyields"]
+    #     market.connect()
+    #     tyields = market.retrieve(tyield_name)
+    #     market.disconnect()
+    #     tyields = Products.tyields(tyields)
+    #     return self.backtester.recommendation(simulation,tyields,parameter)
     
-    def run_recommendation(self,simulation,tyields,parameter):
-        return self.backtester.recommendation(simulation,tyields,parameter)
-        
+    # def run_backtest_qa(self,market,simulation,parameter):
+    #     tyield_name = parameter["tyields"]
+    #     market.connect()
+    #     tyields = market.retrieve(tyield_name)
+    #     market.disconnect()
+    #     tyields = Products.tyields(tyields)
+    #     return self.backtester.backtest(simulation,tyields,parameter,True)
+    
     def pull_historical_trades(self):
         self.db.connect()
         trade = self.db.retrieve("historical_trades")

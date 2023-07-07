@@ -11,6 +11,7 @@ class Parameters(object):
         shorts = [False]
         ranks = [False]
         risks = ["flat","rrr","none"]
+        tyields = ["tyields","tyields10"]
         parameters = []
         buy_days = [1]
         sell_days = [5,10,15,20]
@@ -25,16 +26,18 @@ class Parameters(object):
                                     for sell_day in sell_days:
                                         for risk in risks:
                                             for floor_value in floor_values:
-                                                parameter = {"value":value
-                                                        ,"ceiling":ceiling
-                                                        ,"classification":classification
-                                                        ,"rank":rank
-                                                        ,"short":short
-                                                        ,"market_return":market_return
-                                                        ,"buy_day":buy_day
-                                                        ,"sell_day":sell_day
-                                                        ,"risk":risk
-                                                        ,"floor_value":floor_value
-                                                    }
-                                                parameters.append(parameter)
+                                                for tyield in tyields:
+                                                    parameter = {"value":value
+                                                            ,"ceiling":ceiling
+                                                            ,"classification":classification
+                                                            ,"rank":rank
+                                                            ,"short":short
+                                                            ,"market_return":market_return
+                                                            ,"buy_day":buy_day
+                                                            ,"sell_day":sell_day
+                                                            ,"risk":risk
+                                                            ,"floor_value":floor_value
+                                                            ,"tyields":tyield
+                                                        }
+                                                    parameters.append(parameter)
         return parameters

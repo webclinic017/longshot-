@@ -8,39 +8,36 @@ class ABacktester(object):
         self.portfolio_class = portfolio_class
         self.table_name = "trades" if self.current else "historical_trades"
     
-    def backtest(self,sim,tyields,parameter,qa):
-        self.portfolio_class.db.connect()
-        backtest_data = sim.copy().dropna()
-        final_data = backtest_data.copy()
-        market_return = parameter["market_return"]
-        sell_day = parameter["sell_day"]
-        final_data["weekly_return"] = final_data[f"return_{sell_day}"]
-        mod_val = int(sell_day / 5)
-        final_data = final_data[final_data["week"] % mod_val == 0]
-        final_data = final_data[final_data["day"]==parameter["buy_day"]]
-        final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),False,tyields)
-        if parameter["rank"] == True:
-            final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
-        trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date,False)
-        if not qa:
-            self.portfolio_class.db.store(self.table_name,trades)
-            self.portfolio_class.db.disconnect()
-        else:
-            return trades
-        
-    def recommendation(self,sim,tyields,parameter):
+    def backtest(self,sim,tyields,parameter,rec):
         backtest_data = sim.copy().dropna()
         final_data = backtest_data.copy()
         market_return = parameter["market_return"]
         sell_day = parameter["sell_day"]
         mod_val = int(sell_day / 5)
+        day_offset = 1 if rec else 0
         final_data = final_data[final_data["week"] % mod_val == 0]
-        final_data = final_data[final_data["day"]==parameter["buy_day"]-1]
-        final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),True,tyields)
         if parameter["rank"] == True:
             final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
-        trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date,True)
+        if not rec:
+            final_data["weekly_return"] = final_data[f"return_{sell_day}"]
+        final_data = final_data[final_data["day"]==parameter["buy_day"]-day_offset]
+        final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),rec,tyields)
+        trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date,rec)
         return trades
+        
+    # def recommendation(self,sim,tyields,parameter):
+    #     backtest_data = sim.copy().dropna()
+    #     final_data = backtest_data.copy()
+    #     market_return = parameter["market_return"]
+    #     sell_day = parameter["sell_day"]
+    #     mod_val = int(sell_day / 5)
+    #     final_data = final_data[final_data["week"] % mod_val == 0]
+    #     final_data = final_data[final_data["day"]==parameter["buy_day"]-1]
+    #     final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),True,tyields)
+    #     if parameter["rank"] == True:
+    #         final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
+    #     trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date,True)
+    #     return trades
     
     def backtest_return_helper(self,sim,naming):
         if naming == "week":
