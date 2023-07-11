@@ -96,9 +96,13 @@ class Fund(object):
                 merged = merged.sort_values(["year","week","day"]).dropna()
                 
                 portfolio.db.connect()
-                for parameter in parameters:         
-                    trades = portfolio.run_backtest(self.market,merged,parameter,False)
-                    portfolio.db.store("trades",trades)
+                for parameter in parameters:
+                    trades = portfolio.db.query("trades",parameter)
+                    if trades.index.size < 1:         
+                        trades = portfolio.run_backtest(self.market,merged,parameter,False)
+                        portfolio.db.store("trades",trades)
+                    else:
+                        continue
                 portfolio.db.disconnect()
                 for key in parameter.keys():
                     try:

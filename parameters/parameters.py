@@ -11,7 +11,7 @@ class Parameters(object):
         shorts = [False]
         ranks = [False]
         risks = ["flat","rrr","none"]
-        tyields = ["tyields","tyields10"]
+        tyields = ["tyields","tyields2","tyields10"]
         parameters = []
         buy_days = [1]
         sell_days = [5,10,15,20]

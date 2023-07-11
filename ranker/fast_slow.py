@@ -19,8 +19,8 @@ class FastSlow(NonAIRanker):
         ticker_data = prices.copy()
         ticker_data.sort_values("date",ascending=True,inplace=True)
         ticker_data["adjclose"] = [float(x) for x in ticker_data["adjclose"]]
-        ticker_data[f"fast"] = ticker_data["adjclose"].rolling(30).mean()
-        ticker_data[f"slow"] = ticker_data["adjclose"].rolling(100).mean()
+        ticker_data[f"fast"] = ticker_data["adjclose"].rolling(50).mean()
+        ticker_data[f"slow"] = ticker_data["adjclose"].rolling(200).mean()
         ticker_data["rank_prediction"] = (ticker_data["fast"] - ticker_data["slow"]) / ticker_data["slow"]
         ticker_data.dropna(inplace=True)
         ticker_data["ticker"] = ticker

@@ -30,7 +30,7 @@ for portfolio in fund.portfolios:
             portfolio.db.store("proposals",final)
             portfolio.db.disconnect()
             account = alp.paper_get_account()
-            cash = float(account.cash) - 10
+            cash = float(account.cash) - 25
             # executing order
             order_data = []
             for row in final.iterrows():
