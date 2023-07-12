@@ -15,10 +15,10 @@ class ABacktester(object):
         sell_day = parameter["sell_day"]
         mod_val = int(sell_day / 5)
         day_offset = 1 if rec else 0
-        final_data = final_data[final_data["week"] % mod_val == 0]
         if parameter["rank"] == True:
             final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
         if not rec:
+            final_data = final_data[final_data["week"] % mod_val == 0]
             final_data["weekly_return"] = final_data[f"return_{sell_day}"]
         final_data = final_data[final_data["day"]==parameter["buy_day"]-day_offset]
         final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),rec,tyields)
