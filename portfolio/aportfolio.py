@@ -155,21 +155,11 @@ class APortfolio(object):
         tyields = Products.tyields(tyields)
         return self.backtester.backtest(simulation,tyields,parameter,rec)
              
-    # def run_recommendation(self,market,simulation,parameter):
-    #     tyield_name = parameter["tyields"]
-    #     market.connect()
-    #     tyields = market.retrieve(tyield_name)
-    #     market.disconnect()
-    #     tyields = Products.tyields(tyields)
-    #     return self.backtester.recommendation(simulation,tyields,parameter)
-    
-    # def run_backtest_qa(self,market,simulation,parameter):
-    #     tyield_name = parameter["tyields"]
-    #     market.connect()
-    #     tyields = market.retrieve(tyield_name)
-    #     market.disconnect()
-    #     tyields = Products.tyields(tyields)
-    #     return self.backtester.backtest(simulation,tyields,parameter,True)
+    def pull_orders(self):
+        self.db.cloud_connect()
+        orders = self.db.retrieve("orders")
+        self.db.disconnect()
+        return orders
     
     def pull_historical_trades(self):
         self.db.connect()

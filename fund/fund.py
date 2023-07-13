@@ -42,6 +42,14 @@ class Fund(object):
             recs.append(rec)
         return recs
     
+    def pull_orders(self):
+        recs = []
+        for portfolio in self.portfolios:
+            rec = portfolio.pull_orders()
+            rec["portfolio"] = portfolio.name
+            recs.append(rec)
+        return pd.concat(recs)
+    
     def run_recommendation(self):
         self.market.cloud_connect()
         sp500 = self.market.retrieve("sp500").rename(columns={"Symbol":"ticker"})
