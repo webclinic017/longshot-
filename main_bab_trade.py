@@ -12,7 +12,6 @@ alp = AlpacaApi()
 fund = mf.load_fund()
 new_york_date = datetime.now(tz=timezone(offset=timedelta(hours=-4)))
 year = new_york_date.year
-week = new_york_date.isocalendar()[1]
 
 for portfolio in fund.portfolios:
     try:
@@ -22,10 +21,8 @@ for portfolio in fund.portfolios:
         portfolio.db.cloud_connect()
         final = portfolio.db.retrieve("recs")
         portfolio.db.disconnect()
-        buy_boolean = week % int(portfolio.parameter["sell_day"] / 5) == 0
         ## buys
-        if final.index.size > 0 and buy_boolean:
-            final = final[final["week"]==week].sort_values("weekly_delta",ascending=False).head(positions)
+        if final.index.size > 0:
             portfolio.db.cloud_connect()
             portfolio.db.store("proposals",final)
             portfolio.db.disconnect()

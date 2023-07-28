@@ -19,15 +19,12 @@ for portfolio in fund.portfolios:
     try:
         pricer_class = portfolio.pricer_class
         asset_class = pricer_class.asset_class.value
-        if week % (portfolio.parameter["sell_day"] / 5) == 0:
-            if asset_class == "stocks":
-                closed_orders = alp.live_close_all()
-            closed_order_df = pd.DataFrame([json.loads(closed_order.json())["body"] for closed_order in closed_orders])
-            portfolio.db.cloud_connect()
-            portfolio.db.store("orders",closed_order_df)
-            portfolio.db.disconnect()
-        else:
-             continue
+        if asset_class == "stocks":
+            closed_orders = alp.live_close_all()
+        closed_order_df = pd.DataFrame([json.loads(closed_order.json())["body"] for closed_order in closed_orders])
+        portfolio.db.cloud_connect()
+        portfolio.db.store("orders",closed_order_df)
+        portfolio.db.disconnect()
     except Exception as e:
             portfolio.db.cloud_connect()
             portfolio.db.store("errors",pd.DataFrame([{"date":str(datetime.now()),"status":"trade","error":str(e)}]))
