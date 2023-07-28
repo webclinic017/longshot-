@@ -21,5 +21,5 @@ class ATradingPricer(APricer):
         if not current:
             for i in [1,5,10,15,20]:
                 ticker_sim[f"return_{i}"] = (ticker_sim["adjclose"].shift(-i) - ticker_sim["adjclose"]) / ticker_sim["adjclose"]
-        ticker_sim["weekly_risk_return"] = (ticker_sim["adjclose"].shift(1) - ticker_sim["adjclose"].shift(1+pricer_offset)) / ticker_sim["adjclose"].shift(1+pricer_offset)
+        ticker_sim[f"{self.time_horizon_class.naming_convention}ly_risk_return"] = (ticker_sim["adjclose"].shift(1) - ticker_sim["adjclose"].shift(1+pricer_offset)) / ticker_sim["adjclose"].shift(1+pricer_offset)
         return ticker_sim

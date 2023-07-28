@@ -13,9 +13,9 @@ class Parameters(object):
         risks = ["flat","rrr","none"]
         tyields = ["tyields","tyields2","tyields10"]
         parameters = []
-        buy_days = [1]
-        sell_days = [5,10,15,20]
-        floor_values= [0.5,1]
+        buy_days = [5]
+        sell_days = [1]
+        floor_values= [0.1,0.5,1]
         for value in values:
             for ceiling in ceilings:
                 for classification in classifications:

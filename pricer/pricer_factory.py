@@ -26,6 +26,18 @@ class PricerFactory(object):
                 result = Rolling(AssetClasses.CRYPTO,TimeHorizons.WEEKLY)
             case pricer_list.WEEKLY_CRYPTO_WINDOW:
                 result = Window(AssetClasses.CRYPTO,TimeHorizons.WEEKLY)
+            case pricer_list.DAILY_STOCK_SPECULATION:
+                result =  Speculation(AssetClasses.STOCKS,TimeHorizons.DAILY)
+            case pricer_list.DAILY_STOCK_ROLLING:
+                result = Rolling(AssetClasses.STOCKS,TimeHorizons.DAILY)
+            case pricer_list.DAILY_STOCK_WINDOW:
+                result = Window(AssetClasses.STOCKS,TimeHorizons.DAILY)
+            case pricer_list.DAILY_CRYPTO_SPECULATION:
+                result =  Speculation(AssetClasses.CRYPTO,TimeHorizons.DAILY)
+            case pricer_list.DAILY_CRYPTO_ROLLING:
+                result = Rolling(AssetClasses.CRYPTO,TimeHorizons.DAILY)
+            case pricer_list.DAILY_CRYPTO_WINDOW:
+                result = Window(AssetClasses.CRYPTO,TimeHorizons.DAILY)
             case _:
                 result = None
         return result

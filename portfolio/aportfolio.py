@@ -131,11 +131,13 @@ class APortfolio(object):
         sp500 = self.pricer_class.sp500.copy()
         sp500 = sp500.rename(columns={"Symbol":"ticker"})
         tickers = ["BTC"] if self.pricer_class.asset_class.value == "crypto" else sp500["ticker"].unique()
-        for ticker in tickers:
+        for ticker in tickers[:1]:
             try:
                 ticker_sim = market.retrieve_ticker_prices(self.pricer_class.asset_class.value,ticker)
                 ticker_sim = self.pricer_class.price_returns(ticker_sim,current)
+                print(ticker_sim.head())
                 completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim,bench)
+                print(completed.head())
                 new_prices.append(completed)
             except Exception as e:
                 print(str(e))

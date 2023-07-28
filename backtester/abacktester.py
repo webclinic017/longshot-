@@ -15,18 +15,23 @@ class ABacktester(object):
         sell_day = parameter["sell_day"]
         mod_val = int(sell_day / 5)
         day_offset = 1 if rec else 0
+        print(final_data.head())
         if parameter["rank"] == True:
             final_data = self.portfolio_class.ranker_class.backtest_rank(final_data.copy())
         if not rec:
-            final_data = final_data[final_data["week"] % mod_val == 0]
-            final_data["weekly_return"] = final_data[f"return_{sell_day}"]
-        final_data = final_data[final_data["day"]==parameter["buy_day"]-day_offset]
+            naming = self.portfolio_class.pricer_class.time_horizon_class.naming_convention
+            if naming == "week":
+                final_data = final_data[final_data["week"] % mod_val == 0]
+            final_data[f"{naming}ly_return"] = final_data[f"return_{sell_day}"]
+        if parameter["buy_day"] != 5:
+            final_data = final_data[final_data["day"]==parameter["buy_day"]-day_offset]
         final_data = self.portfolio_class.returns.returns(market_return,self.portfolio_class.pricer_class.time_horizon_class,final_data.copy(),rec,tyields)
+        print(final_data.head())
         trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date,rec)
         return trades
         
     def backtest_return_helper(self,sim,naming):
-        if naming == "week":
+        if naming == "week" or naming == "date":
             # sim["floor_value_boolean"] = [True in [row[1][f"return_{str(i)}"] <= floor_value for i in range(2,5)] for row in sim.iterrows()]
             # sim["floor_index"] = [min([i if row[1][f"return_{i}"] * row[1]["weekly_delta_sign"] <= floor_value else 5 for i in range(2,5)]) for row in sim.iterrows()]
             # sim["floor_boolean"] = 4 >= sim["floor_index"]

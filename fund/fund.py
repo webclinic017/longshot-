@@ -62,18 +62,20 @@ class Fund(object):
                 returns = portfolio.create_returns(self.market,bench,True)
                 self.market.disconnect()
 
+                print(returns.tail())
                 portfolio.pricer_class.db.cloud_connect()
                 sim = portfolio.pricer_class.db.retrieve("predictions").drop("adjclose",axis=1,errors="ignore")
                 portfolio.pricer_class.db.disconnect()
                 
                 merged = portfolio.merge_sim_returns(sim,returns)
-                merged = merged.sort_values(["year","week","day"]).dropna()
+                naming = portfolio.pricer_class.time_horizon_class.naming_convention
+                merged = merged.sort_values(["year",naming,"day"]).dropna()
                 
                 parameter = portfolio.parameter
                 rec = portfolio.run_backtest(self.market,merged.copy(),parameter,True)
                 if rec.index.size > 0:
                     trades = rec.merge(sp500[["ticker","Security","GICS Sector"]],on="ticker")
-                    final = trades[["year","week","ticker","Security","GICS Sector","position","weekly_delta","weekly_delta_sign"]]
+                    final = trades[["year",naming,"ticker","Security","GICS Sector","position",f"{naming}ly_delta",f"{naming}ly_delta_sign"]]
                     portfolio.db.cloud_connect()
                     portfolio.db.drop("recs")
                     portfolio.db.store("recs",final)

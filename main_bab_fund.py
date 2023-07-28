@@ -12,17 +12,18 @@ parameter = {
     ,"classification":False
     ,"rank":False
     ,"short":False
-    ,"risk":"none"
+    ,"risk":"rrr"
     ,"market_return":1.15
-    ,"buy_day":1
-    ,"sell_day":15
+    ,"buy_day":5
+    ,"sell_day":1
     ,"floor_value":1
-    ,"tyields":"tyields"
+    ,"tyields":"tyields10"
 }
 
-portfolio = APortfolio(pricer_list.WEEKLY_STOCK_ROLLING
+portfolio = APortfolio(pricer_list.DAILY_STOCK_WINDOW
                           ,classifier_list.NONE
                           ,ranker_list.NONE)
+
 portfolio.load_optimal_parameter(parameter)
 portfolios = []
 portfolios.append(portfolio)
@@ -30,7 +31,7 @@ portfolios.append(portfolio)
 start = datetime(datetime.now().year,1,1)
 end = datetime.now()
 
-class MainFund(object):
+class MainBabFund(object):
     @classmethod
     def load_fund(self):
         fund = Fund(portfolios,start,end,end)
