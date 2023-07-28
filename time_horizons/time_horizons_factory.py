@@ -6,12 +6,26 @@ class TimeHorizonFactory(object):
     @classmethod
     def build(self,time_horizon):
         match time_horizon:
-            case TimeHorizons.QUARTERLY:
-                result =  ATimeHorizon("quarter",365,"adjclose",4,"year",1,4,4)
             case TimeHorizons.WEEKLY:
-                result =  ATimeHorizon("week",0,"adjclose",1,"week",1,14,52)
-            case TimeHorizons.YEARLY:
-                result =  ATimeHorizon("year",365,"adjclose",1,"year",1,1,1)
+                result = ATimeHorizon(naming_convention="week"
+                                       ,model_date_offset=0
+                                       ,y_pivot_column="adjclose"
+                                       ,y_pivot_number=1
+                                       ,y_price_returns_offset=5
+                                       ,prediction_pivot_column="week"
+                                       ,prediction_pivot_number=1
+                                       ,rolling_number=14
+                                       ,n=52)
+            case TimeHorizons.DAILY:
+                result =  ATimeHorizon(naming_convention="date"
+                                       ,model_date_offset=0
+                                       ,y_pivot_column="adjclose"
+                                       ,y_pivot_number=1
+                                       ,y_price_returns_offset=1
+                                       ,prediction_pivot_column="date"
+                                       ,prediction_pivot_number=1
+                                       ,rolling_number=20
+                                       ,n=52)
             case _:
                 result = None
         return result
