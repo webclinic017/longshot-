@@ -12,8 +12,6 @@ class PricerFactory(object):
     @classmethod
     def build(self,pricer):
         match pricer:
-            case pricer_list.QUARTERLY_STOCK_FINANCIAL:
-                result =  Financial()
             case pricer_list.WEEKLY_STOCK_SPECULATION:
                 result =  Speculation(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
             case pricer_list.WEEKLY_STOCK_ROLLING:

@@ -10,7 +10,6 @@ class ATradingPricer(APricer):
         self.included_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
         self.included_live_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
         self.all_columns = self.factors + self.included_columns
-        self.positions = 100 if asset_class.value == "stocks" else 1
         
     def price_returns(self,ticker_sim,current):
         pricer_offset = self.time_horizon_class.y_price_returns_offset

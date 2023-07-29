@@ -2,19 +2,13 @@ from processor.processor import Processor as p
 import pandas as pd
 from database.adatabase import ADatabase
 import numpy as np
-from pricer.atradingpricer import ATradingPricer
+from pricer.nonaipricer import NonAIPricer
 
-class Window(ATradingPricer):
+class Window(NonAIPricer):
 
     def __init__(self,asset_class,time_horizon):
         super().__init__(asset_class,time_horizon)
-        self.name = f"{self.time_horizon_class.naming_convention}ly_{self.asset_class.value}_window"
-        self.db = ADatabase(self.name)
-        self.factors = []
-        self.included_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
-        self.included_live_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
-        self.all_columns = self.factors + self.included_columns
-        self.isai = False
+        self.naming_suffix = "window"
     
     def training_set(self,ticker,prices,current):
         ticker_data = prices[prices["ticker"]==ticker]

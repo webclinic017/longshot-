@@ -2,20 +2,14 @@ from processor.processor import Processor as p
 import pandas as pd
 from database.adatabase import ADatabase
 import numpy as np
-from pricer.atradingpricer import ATradingPricer
+from pricer.aipricer import AIPricer
 
 
-class Speculation(ATradingPricer):
+class Speculation(AIPricer):
 
     def __init__(self,asset_class,time_horizon):
         super().__init__(asset_class,time_horizon)
-        self.name = f"{self.time_horizon_class.naming_convention}ly_{self.asset_class.value}_speculation"
-        self.db = ADatabase(self.name)
-        self.factors = [str(x) for x in range(14)]
-        self.included_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
-        self.included_live_columns = ["year",self.time_horizon_class.naming_convention,"ticker","adjclose","y"]
-        self.all_columns = self.factors + self.included_columns
-        self.isai = True
+        self.naming_suffix = "speculation"
         
     def training_set(self,ticker,prices,current):
         ticker_data = prices.copy()
