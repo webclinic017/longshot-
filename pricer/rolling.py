@@ -5,6 +5,8 @@ import numpy as np
 from pricer.atradingpricer import ATradingPricer
 
 class Rolling(ATradingPricer):
+    
+    # test
 
     def __init__(self,asset_class,time_horizon):
         super().__init__(asset_class,time_horizon)
