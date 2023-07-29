@@ -22,6 +22,30 @@ class TimeHorizonFactory(object):
                                       ,rolling=14
                                       ,window=10
                                       )
+            case TimeHorizons.MONTHLY:
+                result = ATimeHorizon(name="month"
+                                      ,naming_convention="month"
+                                      ,y_column="adjclose"
+                                      ,y_pivot_number=1
+                                      ,rolling=12
+                                      ,window=12
+                                      )
+            case TimeHorizons.QUARTERLY:
+                result = ATimeHorizon(name="date"
+                                      ,naming_convention="date"
+                                      ,y_column="adjclose"
+                                      ,y_pivot_number=1
+                                      ,rolling=20
+                                      ,window=4
+                                      )
+            case TimeHorizons.YEARLY:
+                result = ATimeHorizon(name="date"
+                                      ,naming_convention="date"
+                                      ,y_column="adjclose"
+                                      ,y_pivot_number=1
+                                      ,rolling=5
+                                      ,window=1
+                                      )
             case _:
                 result = None
         return result

@@ -4,7 +4,9 @@ from database.adatabase import ADatabase
 import numpy as np
 from pricer.nonaipricer import NonAIPricer
 
-class Rolling(NonAIPricer):
+class Rolling(ATradingPricer):
+    
+    # test
 
     def __init__(self,asset_class,time_horizon):
         super().__init__(asset_class,time_horizon)
