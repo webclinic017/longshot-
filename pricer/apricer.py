@@ -2,6 +2,10 @@ from time_horizons.time_horizons_factory import TimeHorizonFactory
 from database.market import Market
 from database.sec import SEC
 from database.adatabase import ADatabase
+from processor.processor import Processor as p
+import pandas as pd
+from database.adatabase import ADatabase
+from tqdm import tqdm
 
 class APricer(object):
     
@@ -34,12 +38,29 @@ class APricer(object):
         self.db.disconnect()
         return predictions
     
-    def pull_models(self):
+    def drop_sim(self):
         self.db.connect()
-        models = self.db.retrieve("models")
+        self.db.drop("sim")
         self.db.disconnect()
-        return models
-    
-    # def sim_processor(self,simulation):
-    #     simulation[self.time_horizon_class.prediction_pivot_column] = simulation[self.time_horizon_class.prediction_pivot_column] + self.time_horizon_class.prediction_pivot_number
-    #     return simulation
+        
+    def drop_predictions(self):
+        self.db.connect()
+        self.db.drop("predictions")
+        self.db.disconnect()
+
+    def training_set(self):
+        self.market.connect()
+        training_sets = []
+        for ticker in tqdm(self.sp500["ticker"].unique()):
+            try:
+                prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
+                prices = p.column_date_processing(prices)
+                ticker_data = self.training_set_helper(ticker,prices,False)
+                training_sets.append(ticker_data)
+            except Exception as e:
+                print(str(e))
+                continue
+        self.market.disconnect()
+        data = pd.concat(training_sets)
+        training_data = data.dropna().copy().sort_values(["year",self.time_horizon_class.naming_convention])
+        self.training_data = training_data

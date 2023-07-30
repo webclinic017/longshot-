@@ -24,10 +24,6 @@ class Fund(object):
         for portfolio in self.portfolios:
             portfolio.create_training_sets()
     
-    def create_historical_models(self):
-        for portfolio in self.portfolios:
-            portfolio.create_historical_models()
-    
     def initialize_backtesters(self):
         for portfolio in self.portfolios:
             portfolio.initialize_backtester(self.backtest_start_date,self.backtest_end_date)
@@ -123,26 +119,6 @@ class Fund(object):
                         print(str(e),key)
             except Exception as e:
                 print(str(e))
-    
-    # def run_backtest_qa(self,parameter):
-    #     self.market.connect()
-    #     bench = Products.spy_bench(self.market.retrieve("spy"))
-    #     self.market.disconnect()
-    #     for portfolio in tqdm(self.portfolios):
-    #         self.market.connect()
-    #         returns = portfolio.create_returns(self.market,bench,False)
-    #         self.market.disconnect()
-    #         portfolio.pricer_class.db.cloud_connect()
-    #         sim = portfolio.pricer_class.db.retrieve("predictions").drop("adjclose",axis=1,errors="ignore")
-    #         portfolio.pricer_class.db.disconnect()
-    #         merged = portfolio.merge_sim_returns(sim,returns)
-    #         merged = merged.sort_values(["year","week","day"]).dropna()
-    #         final = portfolio.run_backtest_qa(self.market,merged.copy(),parameter)
-    #         if final.index.size > 0:
-    #             portfolio.db.cloud_connect()
-    #             portfolio.db.drop("recs_qa")
-    #             portfolio.db.store("recs_qa",final)
-    #             portfolio.db.disconnect()
     
     def reset(self):
         for portfolio in self.portfolios:

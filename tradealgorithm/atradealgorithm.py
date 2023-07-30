@@ -7,10 +7,9 @@ from returns.products import Products
 
 class ATradeAlgorithm(object):
 
-    def __init__(self,returns,risk,modeler):
+    def __init__(self,returns,risk):
         self.returns = returns
         self.risk = risk
-        self.modeler = modeler
 
     def load_optimal_parameter(self,parameter):
         self.parameter = parameter

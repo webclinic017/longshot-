@@ -14,6 +14,12 @@ class PricerFactory(object):
         match pricer:
             case pricer_list.WEEKLY_STOCK_SPECULATION:
                 result =  Speculation(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
+            case pricer_list.QUARTERLY_STOCK_SPECULATION:
+                result =  Speculation(AssetClasses.STOCKS,TimeHorizons.QUARTERLY)
+            case pricer_list.MONTHLY_STOCK_SPECULATION:
+                result =  Speculation(AssetClasses.STOCKS,TimeHorizons.MONTHLY)
+            case pricer_list.YEARLY_STOCK_SPECULATION:
+                result =  Speculation(AssetClasses.STOCKS,TimeHorizons.YEARLY)
             case pricer_list.WEEKLY_STOCK_ROLLING:
                 result = Rolling(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
             case pricer_list.WEEKLY_STOCK_WINDOW:

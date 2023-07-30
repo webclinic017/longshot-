@@ -12,7 +12,7 @@ class TradeAlgorithmFactory(object):
     def build(self,pricer):
         match pricer:
             case TradeAlgorithm.RRR_BETA:
-                result =  ATradeAlgorithm(returns=RequiredReturn(),risk=BetaRisk(),modeler=UniversalModeler())
+                result =  ATradeAlgorithm(returns=RequiredReturn(),risk=BetaRisk())
             case _:
                 result = None
         return result

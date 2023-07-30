@@ -17,7 +17,6 @@ class APortfolio(object):
         self.ranker = ranker
         self.risk = BetaRisk()
         self.returns = RequiredReturn()
-        self.modeler_strat = UniversalModeler()
         self.classifier_name = self.classifier.name if self.classifier.name != None else str(None)
         self.ranker_name = self.ranker.name if self.ranker.name != None else str(None)
         self.names = [self.pricer.name,self.classifier_name,self.ranker_name,self.risk.name,self.returns.name]

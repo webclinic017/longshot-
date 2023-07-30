@@ -1,7 +1,6 @@
 from processor.processor import Processor as p
 from pricer.apricer import APricer
 
-
 class ATradingPricer(APricer):
 
     def __init__(self,asset_class,time_horizon):
