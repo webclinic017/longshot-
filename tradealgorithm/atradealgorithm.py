@@ -1,10 +1,13 @@
 from pricer.pricer_factory import PricerFactory as pricer_fact
 from classifier.classifier_factory import ClassifierFactory as classifier_fact
+from analysis.analysis_factory import AnalysisFactory as analysis_fact
 from ranker.ranker_factory import RankerFactory as ranker_fact
 from backtester.abacktester import ABacktester
 import pandas as pd
 from returns.products import Products
-
+from parameters.parameters import Parameters as params
+from database.adatabase import ADatabase
+from tqdm import tqdm
 class ATradeAlgorithm(object):
 
     def __init__(self,returns,risk):
@@ -13,7 +16,13 @@ class ATradeAlgorithm(object):
 
     def load_optimal_parameter(self,parameter):
         self.parameter = parameter
-
+    
+    def pull_iterations(self):
+        self.db.connect()
+        iterations = self.db.retrieve("iterations")
+        self.db.disconnect()
+        return iterations
+    
     def initialize(self,pricer,ranker,classifier,backtest_start_date,backtest_end_date,current_start_date):
         self.backtest_start_date = backtest_start_date
         self.backtest_end_date = backtest_end_date
@@ -21,8 +30,30 @@ class ATradeAlgorithm(object):
         self.pricer_class = pricer_fact.build(pricer)
         self.ranker_class = ranker_fact.build(ranker)
         self.classifier_class = classifier_fact.build(classifier)
-        self.benchmark = Products.spy_bench(market.retrieve("spy"))
-    
+        self.analysis = analysis_fact.build(self.pricer_class.time_horizon_class.name)
+        self.market_return = 1.15
+        self.positions = 20 if self.pricer_class.asset_class.value == "stocks" else 1
+
+    def initialize_classes(self):
+        self.pricer_class.initialize()
+        self.classifier_name = self.classifier_class.name if self.classifier_class != None else str(None)
+        self.ranker_name = self.ranker_class.name if self.ranker_class != None else str(None)
+        self.names = [self.pricer_class.name,self.classifier_name,self.ranker_name,self.risk.name,self.returns.name]
+        self.acronyms = ["".join([subname[0] for subname in x.split("_")]) for x in self.names]
+        self.name = "_".join(self.acronyms).lower()
+        self.db = ADatabase(self.name)
+
+    def initialize_bench_and_yields(self):
+        self.pricer_class.market.connect()
+        self.benchmark = Products.spy_bench(self.pricer_class.market.retrieve("spy"))
+        self.tyields = Products.tyields(self.pricer_class.market.retrieve("tyields"),1)
+        self.tyields2 = Products.tyields(self.pricer_class.market.retrieve("tyields2"),2)
+        self.tyields10 = Products.tyields(self.pricer_class.market.retrieve("tyields10"),10)
+        self.pricer_class.market.disconnect()
+        dropped_cols = ["realtime_start","realtime_end","value"]
+        self.yields = self.tyields.merge(self.tyields2.drop(dropped_cols,axis=1),on=["year","quarter","month","week","date"],how="left") \
+                    .merge(self.tyields10.drop(dropped_cols,axis=1),on=["year","quarter","month","week","date"],how="left")
+
     def create_simulation(self):
         sims = []
         pricer_sim = self.pull_pricer_sim()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","price_prediction"]]
@@ -42,28 +73,19 @@ class ATradeAlgorithm(object):
         return pricer_sim
     
     def pull_pricer_sim(self):
-        self.pricer_class.db.connect()
-        sim = self.pricer_class.db.retrieve("sim")
-        self.pricer_class.db.disconnect()
-        return sim
+        return self.pricer_class.pull_sim()
     
     def pull_classifier_sim(self):
         if self.classifier_class == None:
             return pd.DataFrame([{}])
         else:
-            self.classifier_class.db.connect()
-            sim = self.classifier_class.db.retrieve("sim")
-            self.classifier_class.db.disconnect()
-            return sim
+            return self.classifier_class.pull_sim()
         
     def pull_ranker_sim(self):
         if self.ranker_class == None:
             return pd.DataFrame([{}])
         else:
-            self.ranker_class.db.connect()
-            sim = self.ranker_class.db.retrieve("sim")
-            self.ranker_class.db.disconnect()
-            return sim
+            return self.ranker_class.pull_sim()
     
     def ameme(self,x):
         try:
@@ -113,22 +135,22 @@ class ATradeAlgorithm(object):
             self.ranker_class.db.disconnect()
             return predictions
 
-    def create_returns(self,market,bench,current):
+    def create_returns(self,current):
         new_prices = []
         sp500 = self.pricer_class.sp500.copy()
         sp500 = sp500.rename(columns={"Symbol":"ticker"})
         tickers = ["BTC"] if self.pricer_class.asset_class.value == "crypto" else sp500["ticker"].unique()
-        for ticker in tickers[:1]:
+        self.pricer_class.market.connect()
+        for ticker in tickers:
             try:
-                ticker_sim = market.retrieve_ticker_prices(self.pricer_class.asset_class.value,ticker)
+                ticker_sim = self.pricer_class.market.retrieve_ticker_prices(self.pricer_class.asset_class.value,ticker)
                 ticker_sim = self.pricer_class.price_returns(ticker_sim,current)
-                print(ticker_sim.head())
-                completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim,bench)
-                print(completed.head())
+                completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim,self.benchmark)
                 new_prices.append(completed)
             except Exception as e:
                 print(str(e))
                 continue
+        self.pricer_class.market.disconnect()
         price_returns = pd.concat(new_prices)
         return price_returns
     
@@ -136,13 +158,30 @@ class ATradeAlgorithm(object):
         merged = sim.merge(returns,on=["year",self.pricer_class.time_horizon_class.naming_convention,"ticker"],how="left")
         return merged
     
-    def run_backtest(self,market,simulation,parameter,rec):
-        tyield_name = parameter["tyields"]
-        market.connect()
-        tyields = market.retrieve(tyield_name)
-        market.disconnect()
-        tyields = Products.tyields(tyields)
-        return self.backtester.backtest(simulation,tyields,parameter,rec)
+    def apply_yields(self,sim,rec):
+        final_data = self.returns.returns(self.market_return,self.pricer_class.time_horizon_class,sim,rec,self.yields)
+        return final_data
+    
+    def initialize_backtester(self):
+        self.parameters = params.parameters()
+        self.backtester = ABacktester(self,True,self.backtest_start_date,self.backtest_end_date)
+    
+    def run_backtest(self,simulation,rec):
+        trades = []
+        self.db.connect()
+        for i in tqdm(range(len(self.parameters))):
+            try:
+                parameter = self.parameters[i]
+                parameter["iteration"] = i
+                trade = self.backtester.backtest(simulation.copy(),parameter,rec)
+                self.db.store("iterations",pd.DataFrame([parameter]))
+                self.db.store("trades",trade)
+                trades.append(trade)
+            except Exception as e:
+                print(str(e))
+        self.db.create_index("trades","iteration")
+        self.db.disconnect()
+        return pd.concat(trades)
              
     def pull_orders(self):
         self.db.cloud_connect()
@@ -157,9 +196,6 @@ class ATradeAlgorithm(object):
         trade["strat"] = self.name
         trade["positions"] = self.pricer_class.positions
         return trade
-    
-    def initialize_backtester(self,start_date,end_date):
-        self.backtester = ABacktester(self,True,start_date,end_date)
 
     def pull_trades(self):
         self.db.connect()

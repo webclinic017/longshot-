@@ -14,6 +14,8 @@ class TimeHorizonFactory(object):
                                       ,model_offset=4
                                       ,rolling=50
                                       ,window=10
+                                      ,instances_per_year=52
+                                      ,holding_period=5
                                       )
             case TimeHorizons.DAILY:
                 result = ATimeHorizon(name="date"
@@ -23,6 +25,8 @@ class TimeHorizonFactory(object):
                                       ,model_offset=4
                                       ,rolling=20
                                       ,window=5
+                                      ,instances_per_year=365
+                                      ,holding_period=1
                                       )
             case TimeHorizons.MONTHLY:
                 result = ATimeHorizon(name="month"
@@ -32,6 +36,8 @@ class TimeHorizonFactory(object):
                                       ,model_offset=4
                                       ,rolling=12
                                       ,window=3
+                                      ,instances_per_year=12
+                                      ,holding_period=12
                                       )
             case TimeHorizons.QUARTERLY:
                 result = ATimeHorizon(name="quarter"
@@ -41,6 +47,8 @@ class TimeHorizonFactory(object):
                                       ,model_offset=4
                                       ,rolling=8
                                       ,window=4
+                                      ,instances_per_year=4
+                                      ,holding_period=4
                                       )
             # case TimeHorizons.YEARLY:
             #     result = ATimeHorizon(name="year"

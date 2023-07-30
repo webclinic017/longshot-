@@ -82,10 +82,10 @@ class FREDExtractor(object):
                 "api_key":token,
                 "observation_start":start,
                 "observation_end":end,
-                "frequency":"w"
+                "frequency":"d"
             }
 
-            url = f"https://api.stlouisfed.org/fred/series/observations?series_id=SP500&file_type=json"
+            url = f"https://api.stlouisfed.org/fred/series/observations?series_id=NASDAQCOM&file_type=json"
             requestResponse = requests.get(url,headers=headers,params=params).json()
             stuff = pd.DataFrame(requestResponse["observations"])
             stuff["value"] = [float(x) if x != "." else np.NAN for x in stuff["value"]]

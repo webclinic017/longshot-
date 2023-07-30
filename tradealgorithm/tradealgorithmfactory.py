@@ -1,16 +1,13 @@
 from tradealgorithm.tradealgorithm import TradeAlgorithm
-from atradealgorithm import ATradeAlgorithm
-from modeler_strats.universal_modeler import UniversalModeler
+from tradealgorithm.atradealgorithm import ATradeAlgorithm
 from risk.beta_risk import BetaRisk
 from returns.required_returns import RequiredReturn
-from database.adatabase import ADatabase
-from backtester.abacktester import ABacktester
-from returns.products import Products
+
 class TradeAlgorithmFactory(object):
 
     @classmethod
-    def build(self,pricer):
-        match pricer:
+    def build(self,tradealgorithm):
+        match tradealgorithm:
             case TradeAlgorithm.RRR_BETA:
                 result =  ATradeAlgorithm(returns=RequiredReturn(),risk=BetaRisk())
             case _:

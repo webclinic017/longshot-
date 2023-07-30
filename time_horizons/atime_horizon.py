@@ -9,8 +9,9 @@ class ATimeHorizon(object):
     # Integer model_offset: how far back we pull model data
     # Integer rolling: the rolling value for averages
     # Integer window: the number of days to look back during window
-    #     
-    def __init__(self,name,naming_convention,y_column,y_pivot_number,model_offset,rolling,window):
+    # Integer instances_per_year: number of instances per year
+    # Integer holding_period: number of days to hold a position    
+    def __init__(self,name,naming_convention,y_column,y_pivot_number,model_offset,rolling,window,instances_per_year,holding_period):
         self.name = name
         self.naming_convention = naming_convention
         self.y_column = y_column 
@@ -18,3 +19,5 @@ class ATimeHorizon(object):
         self.model_offset = model_offset
         self.rolling = rolling
         self.window = window
+        self.instances_per_year = instances_per_year
+        self.holding_period = holding_period

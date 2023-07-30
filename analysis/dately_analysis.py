@@ -20,8 +20,8 @@ class DatelyAnalysis(object):
         cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
         cumulative["return"] = cumulative["pv"].pct_change().fillna(1)
         cumulative["beta"] = cumulative[["return","bench_dately_return"]].cov().iloc[0][1]/cumulative["dately_variance"].iloc[-1]
-        cumulative["rrr"] = tyields["dately_yield"].mean() + cumulative["beta"].mean()*(cumulative["bench"].mean()-tyields["dately_yield"].mean())
-        cumulative["sharpe"] = (cumulative["pv"] - tyields["dately_yield"].mean()) / cumulative["beta"].mean()
+        cumulative["rrr"] = tyields["dately_yield10"].mean() + cumulative["beta"].mean()*(cumulative["bench"].mean()-tyields["dately_yield10"].mean())
+        cumulative["sharpe"] = (cumulative["pv"] - tyields["dately_yield10"].mean()) / cumulative["beta"].mean()
         return cumulative
     
     @classmethod
