@@ -30,16 +30,19 @@ class AIPricer(ATradingPricer):
         sims = []
         training_year_offset = self.time_horizon_class.model_offset 
         self.db.connect()
-        for year in range(self.start_date.year ,self.end_date.year):
-            training_slice = self.training_data[(self.training_data["year"]<year) & (self.training_data["year"] >= year - training_year_offset)].reset_index(drop=True)
-            prediction_set = self.training_data[self.training_data["year"]==year].reset_index(drop=True)
-            stuff = self.modeler.model(training_slice,prediction_set,self.factors,False)
-            stuff = stuff.rename(columns={"prediction":f"price_prediction"})
-            relevant_columns = list(set(list(stuff.columns)) - set(self.factors))
-            complete = stuff[relevant_columns]
-            complete = self.sim_processor(complete)
-            self.db.store("sim",complete)
-            sims.append(complete)
+        for year in range(self.start_date.year, self.end_date.year):
+            try:
+                training_slice = self.training_data[(self.training_data["year"]<year) & (self.training_data["year"] >= year - training_year_offset)].reset_index(drop=True)
+                prediction_set = self.training_data[self.training_data["year"]==year].reset_index(drop=True)
+                stuff = self.modeler.model(training_slice,prediction_set,self.factors,False)
+                stuff = stuff.rename(columns={"prediction":f"price_prediction"})
+                relevant_columns = list(set(list(stuff.columns)) - set(self.factors))
+                complete = stuff[relevant_columns]
+                complete = self.sim_processor(complete)
+                self.db.store("sim",complete)
+                sims.append(complete)
+            except Exception as e:
+                print(year,str(e))
         self.db.disconnect()
         return pd.concat(sims)
     

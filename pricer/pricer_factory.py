@@ -12,6 +12,8 @@ class PricerFactory(object):
     @classmethod
     def build(self,pricer):
         match pricer:
+            case pricer_list.DAILY_STOCK_SPECULATION:
+                result =  Speculation(AssetClasses.STOCKS,TimeHorizons.DAILY)
             case pricer_list.WEEKLY_STOCK_SPECULATION:
                 result =  Speculation(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
             case pricer_list.QUARTERLY_STOCK_SPECULATION:
@@ -20,22 +22,35 @@ class PricerFactory(object):
                 result =  Speculation(AssetClasses.STOCKS,TimeHorizons.MONTHLY)
             case pricer_list.YEARLY_STOCK_SPECULATION:
                 result =  Speculation(AssetClasses.STOCKS,TimeHorizons.YEARLY)
+            
+            case pricer_list.DAILY_STOCK_ROLLING:
+                result =  Rolling(AssetClasses.STOCKS,TimeHorizons.DAILY)
             case pricer_list.WEEKLY_STOCK_ROLLING:
-                result = Rolling(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
+                result =  Rolling(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
+            case pricer_list.QUARTERLY_STOCK_ROLLING:
+                result =  Rolling(AssetClasses.STOCKS,TimeHorizons.QUARTERLY)
+            case pricer_list.MONTHLY_STOCK_ROLLING:
+                result =  Rolling(AssetClasses.STOCKS,TimeHorizons.MONTHLY)
+            case pricer_list.YEARLY_STOCK_ROLLING:
+                result =  Rolling(AssetClasses.STOCKS,TimeHorizons.YEARLY)
+
+            case pricer_list.DAILY_STOCK_WINDOW:
+                result =  Window(AssetClasses.STOCKS,TimeHorizons.DAILY)
             case pricer_list.WEEKLY_STOCK_WINDOW:
-                result = Window(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
+                result =  Window(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
+            case pricer_list.QUARTERLY_STOCK_WINDOW:
+                result =  Window(AssetClasses.STOCKS,TimeHorizons.QUARTERLY)
+            case pricer_list.MONTHLY_STOCK_WINDOW:
+                result =  Window(AssetClasses.STOCKS,TimeHorizons.MONTHLY)
+            case pricer_list.YEARLY_STOCK_WINDOW:
+                result =  Window(AssetClasses.STOCKS,TimeHorizons.YEARLY)
+            
             case pricer_list.WEEKLY_CRYPTO_SPECULATION:
                 result =  Speculation(AssetClasses.CRYPTO,TimeHorizons.WEEKLY)
             case pricer_list.WEEKLY_CRYPTO_ROLLING:
                 result = Rolling(AssetClasses.CRYPTO,TimeHorizons.WEEKLY)
             case pricer_list.WEEKLY_CRYPTO_WINDOW:
                 result = Window(AssetClasses.CRYPTO,TimeHorizons.WEEKLY)
-            case pricer_list.DAILY_STOCK_SPECULATION:
-                result =  Speculation(AssetClasses.STOCKS,TimeHorizons.DAILY)
-            case pricer_list.DAILY_STOCK_ROLLING:
-                result = Rolling(AssetClasses.STOCKS,TimeHorizons.DAILY)
-            case pricer_list.DAILY_STOCK_WINDOW:
-                result = Window(AssetClasses.STOCKS,TimeHorizons.DAILY)
             case pricer_list.DAILY_CRYPTO_SPECULATION:
                 result =  Speculation(AssetClasses.CRYPTO,TimeHorizons.DAILY)
             case pricer_list.DAILY_CRYPTO_ROLLING:

@@ -17,5 +17,5 @@ class Window(NonAIPricer):
         ticker_data["ticker"] = ticker
         ticker_data = ticker_data.replace([np.inf, -np.inf], np.nan).dropna()
         ticker_data.dropna(inplace=True)
-        ticker_data = ticker_data[["year","quarter",self.time_horizon_class.naming_convention,"ticker",f"price_prediction"]]
+        ticker_data = ticker_data[["year",self.time_horizon_class.naming_convention,"ticker",f"price_prediction"]]
         return ticker_data
