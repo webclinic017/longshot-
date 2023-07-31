@@ -47,6 +47,11 @@ class APricer(object):
         self.db.connect()
         self.db.drop("predictions")
         self.db.disconnect()
+    
+    def drop_recommendations(self):
+        self.db.connect()
+        self.db.drop("recs")
+        self.db.disconnect()
 
     def training_set(self):
         self.market.connect()

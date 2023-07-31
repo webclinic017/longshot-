@@ -72,7 +72,8 @@ class ABacktester(object):
             test = test[test[f"{naming}ly_delta"]<=floor_value]
 
         ledgers = []
-
+        if current:
+            test = test[test["date"]==test["date"].max()]
         ## ledger creation
         for i in range(positions):    
             ledger = test.sort_values(["year",naming,f"{naming}ly_delta"])[columns].groupby(["year",naming],sort=False).nth(-i-1)
@@ -80,7 +81,6 @@ class ABacktester(object):
             ledgers.append(ledger)
         final = pd.concat(ledgers).reset_index()
         final["iteration"] = parameter["iteration"]
-        if current:
-            final = final[final["date"]==final["date"].max()]
+
         ## storing
         return final
