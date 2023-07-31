@@ -10,6 +10,7 @@ class Parameters(object):
         ranks = [False]
         risks = ["rrr","flat","none"]
         tyields = ["tyield1","tyield2","tyield10"]
+        buy_days = [0,1,2,3,4]
         parameters = []
         floor_values= [0.5,1]
         for value in values:
@@ -19,13 +20,15 @@ class Parameters(object):
                         for risk in risks:
                             for floor_value in floor_values:
                                 for tyield in tyields:
-                                    parameter = {"value":value
-                                            ,"ceiling":ceiling
-                                            ,"classification":classification
-                                            ,"rank":rank
-                                            ,"risk":risk
-                                            ,"floor_value":floor_value
-                                            ,"tyields":tyield
-                                        }
-                                    parameters.append(parameter)
+                                    for buy_day in buy_days:
+                                        parameter = {"value":value
+                                                ,"ceiling":ceiling
+                                                ,"classification":classification
+                                                ,"rank":rank
+                                                ,"risk":risk
+                                                ,"floor_value":floor_value
+                                                ,"tyields":tyield
+                                                ,"buy_day":buy_day
+                                            }
+                                        parameters.append(parameter)
         return parameters

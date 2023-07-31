@@ -1,5 +1,5 @@
 from pricer.atradingpricer import ATradingPricer
-import pandas as pd
+from datetime import datetime
 
 class NonAIPricer(ATradingPricer):
 
@@ -13,3 +13,13 @@ class NonAIPricer(ATradingPricer):
         self.db.store("sim",self.training_data)
         self.db.disconnect()
         return self.training_data
+    
+    def create_predictions(self):
+        self.training_set()
+        predictions = self.training_data
+        predictions = predictions[predictions["year"]==datetime.now().year]
+        self.db.connect()
+        self.db.drop("predictions")
+        self.db.store("predictions",predictions)
+        self.db.disconnect()
+        return predictions

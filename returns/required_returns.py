@@ -10,7 +10,7 @@ class RequiredReturn(object):
         n = atime_horizon.instances_per_year
         simulation = simulation.merge(yields.drop(["year","quarter","month","week"],axis=1),on="date",how="left").dropna()
         week_col = "adjclose" if current else "prev_close"
-        start_col = "quarter_start" if naming == "quarter" else week_col
+        start_col = week_col
         simulation[f"market_{naming}ly_return"] = math.exp(np.log(market_return)/n)
         simulation[f"projected_{naming}ly_return"] = (simulation[f"price_prediction"] - simulation[start_col]) / simulation[start_col]
         simulation[f"{naming}ly_delta"] = [abs(x) for x in simulation[f"projected_{naming}ly_return"]]

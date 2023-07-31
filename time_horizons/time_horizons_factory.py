@@ -37,7 +37,7 @@ class TimeHorizonFactory(object):
                                       ,rolling=12
                                       ,window=3
                                       ,instances_per_year=12
-                                      ,holding_period=12
+                                      ,holding_period=20
                                       )
             case TimeHorizons.QUARTERLY:
                 result = ATimeHorizon(name="quarter"
@@ -48,7 +48,7 @@ class TimeHorizonFactory(object):
                                       ,rolling=8
                                       ,window=4
                                       ,instances_per_year=4
-                                      ,holding_period=4
+                                      ,holding_period=60
                                       )
             # case TimeHorizons.YEARLY:
             #     result = ATimeHorizon(name="year"

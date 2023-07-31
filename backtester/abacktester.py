@@ -12,12 +12,14 @@ class ABacktester(object):
         final_data = sim.dropna()
         sell_day = self.trade_algorithm.pricer_class.time_horizon_class.holding_period
         mod_val = int(sell_day / 5)
+        buy_day = parameter["buy_day"]
         if parameter["rank"] == True:
             final_data = self.trade_algorithm.ranker_class.backtest_rank(final_data)
         if not rec:
             naming = self.trade_algorithm.pricer_class.time_horizon_class.naming_convention
             if naming != "date":
                 final_data = final_data[final_data["week"] % mod_val == 0]
+                final_data = final_data[final_data["day"]==buy_day]
         trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date,rec)
         return trades
         
@@ -78,5 +80,7 @@ class ABacktester(object):
             ledgers.append(ledger)
         final = pd.concat(ledgers).reset_index()
         final["iteration"] = parameter["iteration"]
+        if current:
+            final = final[final["date"]==final["date"].max()]
         ## storing
         return final

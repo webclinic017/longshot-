@@ -10,4 +10,4 @@ class BetaRisk(object):
         completed = new_sim.copy()
         completed[f"{naming}ly_beta"] = completed[f"market_{naming}ly_cov"] / completed[f"{naming}ly_variance"]
         completed.dropna(inplace=True)
-        return completed.groupby(["year",naming,"day","ticker"]).mean().reset_index()
+        return completed.groupby(["year","quarter","month","week","date","ticker"]).mean().reset_index()

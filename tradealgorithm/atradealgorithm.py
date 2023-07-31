@@ -1,6 +1,6 @@
 from pricer.pricer_factory import PricerFactory as pricer_fact
 from classifier.classifier_factory import ClassifierFactory as classifier_fact
-from analysis.analysis_factory import AnalysisFactory as analysis_fact
+from analysis.analysis import Analysis
 from ranker.ranker_factory import RankerFactory as ranker_fact
 from backtester.abacktester import ABacktester
 import pandas as pd
@@ -14,9 +14,11 @@ class ATradeAlgorithm(object):
         self.returns = returns
         self.risk = risk
 
-    def load_optimal_parameter(self,parameter):
-        self.parameter = parameter
-    
+    def load_optimal_parameter(self):
+        self.db.connect()
+        self.parameter = self.db.retrieve("optimal").to_dict("records")[0]
+        self.db.disconnect()
+
     def pull_iterations(self):
         self.db.connect()
         iterations = self.db.retrieve("iterations")
@@ -30,7 +32,7 @@ class ATradeAlgorithm(object):
         self.pricer_class = pricer_fact.build(pricer)
         self.ranker_class = ranker_fact.build(ranker)
         self.classifier_class = classifier_fact.build(classifier)
-        self.analysis = analysis_fact.build(self.pricer_class.time_horizon_class.name)
+        self.analysis = Analysis(self.pricer_class.time_horizon_class.name)
         self.market_return = 1.15
         self.positions = 20 if self.pricer_class.asset_class.value == "stocks" else 1
 
@@ -166,14 +168,14 @@ class ATradeAlgorithm(object):
         self.parameters = params.parameters()
         self.backtester = ABacktester(self,True,self.backtest_start_date,self.backtest_end_date)
     
-    def run_backtest(self,simulation,rec):
+    def run_backtest(self,simulation):
         trades = []
         self.db.connect()
         for i in tqdm(range(len(self.parameters))):
             try:
                 parameter = self.parameters[i]
                 parameter["iteration"] = i
-                trade = self.backtester.backtest(simulation.copy(),parameter,rec)
+                trade = self.backtester.backtest(simulation.copy(),parameter,False)
                 self.db.store("iterations",pd.DataFrame([parameter]))
                 self.db.store("trades",trade)
                 trades.append(trade)
@@ -182,12 +184,31 @@ class ATradeAlgorithm(object):
         self.db.create_index("trades","iteration")
         self.db.disconnect()
         return pd.concat(trades)
+
+    def run_recommendation(self,simulation):
+        trades = []
+        self.db.connect()
+        try:
+            parameter = self.parameter
+            trade = self.backtester.backtest(simulation.copy(),parameter,True)
+            self.db.store("recs",trade)
+            trades.append(trade)
+        except Exception as e:
+            print(str(e))
+        self.db.disconnect()
+        return pd.concat(trades)
              
     def pull_orders(self):
         self.db.cloud_connect()
         orders = self.db.retrieve("orders")
         self.db.disconnect()
         return orders
+    
+    def pull_recommendations(self):
+        self.db.cloud_connect()
+        recs = self.db.retrieve("recs")
+        self.db.disconnect()
+        return recs
     
     def pull_historical_trades(self):
         self.db.connect()
