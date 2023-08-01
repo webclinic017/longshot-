@@ -171,6 +171,7 @@ class ATradeAlgorithm(object):
     def run_backtest(self,simulation):
         trades = []
         self.db.connect()
+        self.db.create_index("trades","iteration")
         for i in tqdm(range(len(self.parameters))):
             try:
                 parameter = self.parameters[i]
@@ -181,7 +182,7 @@ class ATradeAlgorithm(object):
                 trades.append(trade)
             except Exception as e:
                 print(str(e))
-        self.db.create_index("trades","iteration")
+        # self.db.create_index("trades","iteration")
         self.db.disconnect()
         return pd.concat(trades)
 

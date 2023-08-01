@@ -37,7 +37,8 @@ class Analysis(object):
         bench = bench.fillna(method="bfill")
         cumulative = cumulative.merge(bench[["year",self.naming,"adjclose"]],on=["year",self.naming],how="left")
         cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
-        cumulative["date_string"] = [f'{int(row[1]["year"])}-W{int(row[1]["week"])}' for row in cumulative.iterrows()]
-        cumulative["date"] = [datetime.strptime(x + '-1', '%G-W%V-%u') + timedelta(days=4) for x in cumulative["date_string"]]
+        if self.naming != "date":
+            cumulative["date_string"] = [f'{int(row[1]["year"])}-W{int(row[1]["week"])}' for row in cumulative.iterrows()]
+            cumulative["date"] = [datetime.strptime(x + '-1', '%G-W%V-%u') + timedelta(days=4) for x in cumulative["date_string"]]
         cumulative = cumulative.fillna(method="bfill")
         return cumulative

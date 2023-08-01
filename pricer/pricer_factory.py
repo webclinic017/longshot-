@@ -4,6 +4,7 @@ from pricer.financial import Financial
 from pricer.speculation import Speculation
 from pricer.window import Window
 from pricer.rolling import Rolling
+from pricer.mean_reversion import MeanReversion
 from time_horizons.time_horizons import TimeHorizons
 from asset_classes.asset_classes import AssetClasses
 
@@ -57,6 +58,9 @@ class PricerFactory(object):
                 result = Rolling(AssetClasses.CRYPTO,TimeHorizons.DAILY)
             case pricer_list.DAILY_CRYPTO_WINDOW:
                 result = Window(AssetClasses.CRYPTO,TimeHorizons.DAILY)
+
+            case pricer_list.DAILY_STOCK_MEANREVERSION:
+                result = MeanReversion(AssetClasses.STOCKS,TimeHorizons.DAILY)
             case _:
                 result = None
         return result
