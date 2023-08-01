@@ -5,6 +5,9 @@ from pricer.speculation import Speculation
 from pricer.window import Window
 from pricer.rolling import Rolling
 from pricer.mean_reversion import MeanReversion
+from pricer.dev_rolling import DevRolling
+from pricer.dailybreakout import DailyBreakout
+
 from time_horizons.time_horizons import TimeHorizons
 from asset_classes.asset_classes import AssetClasses
 
@@ -61,6 +64,10 @@ class PricerFactory(object):
 
             case pricer_list.DAILY_STOCK_MEANREVERSION:
                 result = MeanReversion(AssetClasses.STOCKS,TimeHorizons.DAILY)
+            case pricer_list.DAILY_STOCK_DEVROLLING:
+                result = DevRolling(AssetClasses.STOCKS,TimeHorizons.DAILY)
+            case pricer_list.DAILY_STOCK_BREAKOUT:
+                result = DailyBreakout(AssetClasses.STOCKS,TimeHorizons.DAILY)
             case _:
                 result = None
         return result
