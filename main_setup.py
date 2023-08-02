@@ -17,12 +17,21 @@ market.connect()
 market.store("sp500",sp5)
 market.disconnect()
 
+# market.connect()
+# sp5 = market.retrieve("sp500")
+# market.disconnect()
+
+# market.connect()
+# start = datetime(2020,1,1).strftime("%Y-%m-%d")
+# market.disconnect()
+# end = datetime.now().strftime("%Y-%m-%d")
+
 market.connect()
-start = datetime(2020,1,1).strftime("%Y-%m-%d")
+start = market.retrieve_max_date("stocks")
 market.disconnect()
 end = datetime.now().strftime("%Y-%m-%d")
 
-market.connect()
+market.cloud_connect()
 for ticker in tqdm(list(sp5["Symbol"].unique())):
     try:
         if "." in ticker:
@@ -37,7 +46,7 @@ for ticker in tqdm(list(sp5["Symbol"].unique())):
         print(ticker,str(e))
 market.disconnect()
 
-market.connect()
+market.cloud_connect()
 try:
     try:
         data = TiingoExtractor.crypto("BTC",start,end)
@@ -49,7 +58,7 @@ except Exception as e:
     print(ticker,str(e))
 market.disconnect()
 
-market.connect()
+market.cloud_connect()
 try:
     data = FREDExtractor.spy(start,end)
     market.store("spy",data)
