@@ -188,7 +188,7 @@ class ATradeAlgorithm(object):
 
     def run_recommendation(self,simulation):
         trades = []
-        self.db.connect()
+        self.db.cloud_connect()
         try:
             parameter = self.parameter
             trade = self.backtester.backtest(simulation.copy(),parameter,True)
@@ -206,7 +206,7 @@ class ATradeAlgorithm(object):
         return orders
     
     def pull_recommendations(self):
-        self.db.connect()
+        self.db.cloud_connect()
         recs = self.db.retrieve("recs")
         self.db.disconnect()
         return recs
