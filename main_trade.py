@@ -27,7 +27,8 @@ week = current_date.isocalendar()[1]
 positions = 20
 
 pricer_classes = [] 
-pricer_classes.append(Pricer.WEEKLY_STOCK_WINDOW)
+# pricer_classes.append(Pricer.WEEKLY_STOCK_WINDOW)
+pricer_classes.append(Pricer.DAILY_STOCK_ROLLING)
 
 for pricer_class in tqdm(pricer_classes):
     try:
@@ -35,7 +36,6 @@ for pricer_class in tqdm(pricer_classes):
         trade_algo.initialize_classes()
         final = trade_algo.pull_recommendations()
         if final.index.size > 0:
-            final = final[final["week"]==week].sort_values("weekly_delta",ascending=False).head(positions)
             account = alp.live_get_account()
             cash = float(account.cash)
             # executing order
@@ -44,9 +44,8 @@ for pricer_class in tqdm(pricer_classes):
                 try:
                     ticker = "BTC/USD" if row[1]["ticker"] == "BTC" else row[1]["ticker"] 
                     amount = cash / positions
-                    print(ticker,amount)
-#                     order_data.append(alp.live_market_order(ticker,amount))
-#                     sleep(1)
+                    order_data.append(alp.live_market_order(ticker,amount))
+                    sleep(1)
                 except Exception as e:
                     trade_algo.db.connect()
                     trade_algo.db.store("errors",pd.DataFrame([{"date":str(datetime.now()),"error":str(e)}]))
@@ -58,7 +57,7 @@ for pricer_class in tqdm(pricer_classes):
         trade_algo.db.cloud_connect()
         trade_algo.db.store("algo_iterations",pd.DataFrame([{"date":str(datetime.now()),"status":"complete"}]))
         trade_algo.db.disconnect()
-#         sleep(300)
+        sleep(300)
     except Exception as e:
             trade_algo.db.cloud_connect()
             trade_algo.db.store("algo_iterations",pd.DataFrame([{"date":str(datetime.now()),"status":"incomplete"}]))

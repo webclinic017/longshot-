@@ -205,6 +205,12 @@ class ATradeAlgorithm(object):
         self.db.disconnect()
         return orders
     
+    def drop_recommendations(self):
+        self.db.cloud_connect()
+        recs = self.db.drop("recs")
+        self.db.disconnect()
+        return recs    
+    
     def pull_recommendations(self):
         self.db.cloud_connect()
         recs = self.db.retrieve("recs")
