@@ -12,6 +12,7 @@ class Products(object):
     @classmethod
     def spy_bench(self,bench):
         bench = p.column_date_processing(bench)
+        bench["date"] = bench["date"] + timedelta(days=7)
         bench["day"] = [x.weekday() for x in bench["date"]]
         bench["week"] = [x.week for x in bench["date"]]
         bench["year"] = [x.year for x in bench["date"]]
@@ -40,6 +41,12 @@ class Products(object):
     @classmethod
     def tyields(self,tyields,maturity):
         tyields = p.column_date_processing(tyields)
+        tyields["date"] = tyields["date"] + timedelta(days=7)
+        tyields["day"] = [x.weekday() for x in tyields["date"]]
+        tyields["week"] = [x.week for x in tyields["date"]]
+        tyields["year"] = [x.year for x in tyields["date"]]
+        tyields["month"] = [x.month for x in tyields["date"]]
+        tyields["quarter"] = [x.quarter for x in tyields["date"]]
         tyields[f"yield{maturity}"] = [1+(x/100) for x in tyields["value"]]
         tyields[f"dately_yield{maturity}"] = [math.exp(math.log(x)/365) for x in tyields[f"yield{maturity}"]]
         tyields[f"weekly_yield{maturity}"] = [math.exp(math.log(x)/52) for x in tyields[f"yield{maturity}"]]

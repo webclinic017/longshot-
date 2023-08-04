@@ -4,15 +4,15 @@ class Parameters(object):
 
     @classmethod
     def parameters(self):
-        values = [True,False]
-        ceilings = [True,False]
+        values = [True]
+        ceilings = [False]
         classifications = [False]
         ranks = [False]
-        risks = ["rrr","flat","none"]
+        risks = ["none"]
         tyields = ["tyield1","tyield2","tyield10"]
-        buy_days = [0,1,2,3,4]
+        buy_days = [1]
         parameters = []
-        floor_values= [0.5,1]
+        floor_values= [1]
         for value in values:
             for ceiling in ceilings:
                 for classification in classifications:
