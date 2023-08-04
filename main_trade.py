@@ -1,10 +1,7 @@
 from tradealgorithm.tradealgorithm import TradeAlgorithm
 from tradealgorithm.tradealgorithmfactory import TradeAlgorithmFactory
-from pricer.pricer_factory import PricerFactory
 from pricer.pricer import Pricer
-from ranker.ranker_factory import RankerFactory
 from ranker.ranker import Ranker
-from classifier.classifier_factory import ClassifierFactory
 from classifier.classifier import Classifier
 from datetime import datetime
 from tqdm import tqdm
@@ -35,6 +32,7 @@ for pricer_class in tqdm(pricer_classes):
         trade_algo.initialize(pricer_class,ranker_class,classifier_class,start,end,current_date)
         trade_algo.initialize_classes()
         final = trade_algo.pull_recommendations()
+        final = final.sort_values("")
         if final.index.size > 0:
             account = alp.live_get_account()
             cash = float(account.cash)
@@ -43,7 +41,8 @@ for pricer_class in tqdm(pricer_classes):
             for row in final.iterrows():
                 try:
                     ticker = "BTC/USD" if row[1]["ticker"] == "BTC" else row[1]["ticker"] 
-                    amount = cash / positions
+                    amount = round(cash / positions,2)
+                    print(ticker,amount)
                     order_data.append(alp.live_market_order(ticker,amount))
                     sleep(1)
                 except Exception as e:
@@ -57,7 +56,6 @@ for pricer_class in tqdm(pricer_classes):
         trade_algo.db.cloud_connect()
         trade_algo.db.store("algo_iterations",pd.DataFrame([{"date":str(datetime.now()),"status":"complete"}]))
         trade_algo.db.disconnect()
-        sleep(300)
     except Exception as e:
             trade_algo.db.cloud_connect()
             trade_algo.db.store("algo_iterations",pd.DataFrame([{"date":str(datetime.now()),"status":"incomplete"}]))

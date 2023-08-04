@@ -17,17 +17,8 @@ market.connect()
 market.store("sp500",sp5)
 market.disconnect()
 
-# market.connect()
-# sp5 = market.retrieve("sp500")
-# market.disconnect()
-
 start = datetime(2020,1,1).strftime("%Y-%m-%d")
 end = datetime.now().strftime("%Y-%m-%d")
-
-# market.cloud_connect()
-# start = market.retrieve_max_date("stocks")
-# market.disconnect()
-# end = datetime.now().strftime("%Y-%m-%d")
 
 market.cloud_connect()
 for ticker in tqdm(list(sp5["Symbol"].unique())):

@@ -32,7 +32,6 @@ class ABacktester(object):
         ceiling = parameter["ceiling"]
         classification = parameter["classification"]
         tyields = parameter["tyields"]
-        # short = parameter["short"]
         risk = parameter["risk"]
         floor_value = parameter["floor_value"]
         naming = self.trade_algorithm.pricer_class.time_horizon_class.naming_convention
