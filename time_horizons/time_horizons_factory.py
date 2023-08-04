@@ -12,8 +12,8 @@ class TimeHorizonFactory(object):
                                       ,y_column="adjclose"
                                       ,y_pivot_number=1
                                       ,model_offset=4
-                                      ,rolling=14
-                                      ,window=4
+                                      ,rolling=50
+                                      ,window=10
                                       ,instances_per_year=52
                                       ,holding_period=5
                                       )
@@ -50,6 +50,15 @@ class TimeHorizonFactory(object):
                                       ,instances_per_year=4
                                       ,holding_period=60
                                       )
+            # case TimeHorizons.YEARLY:
+            #     result = ATimeHorizon(name="year"
+            #                           ,naming_convention="year"
+            #                           ,y_column="adjclose"
+            #                           ,y_pivot_number=1
+            #                           ,model_offset=4
+            #                           ,rolling=5
+            #                           ,window=1
+            #                           )
             case _:
                 result = None
         return result
