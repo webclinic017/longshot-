@@ -8,7 +8,7 @@ class RequiredReturn(object):
     def returns(self,market_return,atime_horizon,simulation,current,yields):
         naming = atime_horizon.naming_convention
         n = atime_horizon.instances_per_year
-        simulation = simulation.merge(yields.drop(["year","quarter","month","week"],axis=1),on="date",how="left").dropna()
+        simulation = simulation.merge(yields.drop(["quarter","month"],axis=1),on=["year","week"],how="left").dropna()
         week_col = "adjclose" if current else "prev_close"
         start_col = week_col
         simulation[f"market_{naming}ly_return"] = math.exp(np.log(market_return)/n)

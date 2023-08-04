@@ -17,8 +17,10 @@ class Analysis(object):
         cumulative = portfolio[[i for i in counted_columns]].cumprod()
         cumulative["year"] = portfolio["year"]
         cumulative[self.naming] = portfolio[self.naming]
+        if self.naming != "week":
+            cumulative["week"] = [x.week for x in cumulative["date"]]
         cumulative["pv"] = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in cumulative.iterrows()]
-        cumulative = cumulative.merge(bench_returns[["year",self.naming,"adjclose","bench_dately_return",f"{self.naming}ly_variance"]],on=["year",self.naming],how="left")
+        cumulative = cumulative.merge(bench_returns[["year","week","adjclose","bench_dately_return",f"{self.naming}ly_variance"]],on=["year","week"],how="left")
         cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
         cumulative["return"] = cumulative["pv"].pct_change().fillna(1)
         cumulative["beta"] = cumulative[["return","bench_dately_return"]].cov().iloc[0][1]/cumulative[f"{self.naming}ly_variance"].iloc[-1]
@@ -32,10 +34,12 @@ class Analysis(object):
         cumulative = portfolio[[i for i in counted_columns]].cumprod()
         cumulative["year"] = portfolio["year"]
         cumulative[self.naming] = portfolio[self.naming]
+        if self.naming != "week":
+            cumulative["week"] = [x.week for x in cumulative["date"]]
         cumulative["pv"] = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in cumulative.iterrows()]
         cumulative["daily_returns"] = daily_returns
         bench = bench.fillna(method="bfill")
-        cumulative = cumulative.merge(bench[["year",self.naming,"adjclose"]],on=["year",self.naming],how="left")
+        cumulative = cumulative.merge(bench[["year","week","adjclose"]],on=["year","week"],how="left")
         cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
         if self.naming != "date":
             cumulative["date_string"] = [f'{int(row[1]["year"])}-W{int(row[1]["week"])}' for row in cumulative.iterrows()]

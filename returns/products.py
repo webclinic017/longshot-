@@ -12,12 +12,6 @@ class Products(object):
     @classmethod
     def spy_bench(self,bench):
         bench = p.column_date_processing(bench)
-        bench["date"] = bench["date"] + timedelta(days=7)
-        bench["day"] = [x.weekday() for x in bench["date"]]
-        bench["week"] = [x.week for x in bench["date"]]
-        bench["year"] = [x.year for x in bench["date"]]
-        bench["month"] = [x.month for x in bench["date"]]
-        bench["quarter"] = [x.quarter for x in bench["date"]]
         bench.rename(columns={"value":"adjclose"},inplace=True)
         bench_returns = bench.copy().sort_values("date")
         bench_returns[f"bench_dately_return"] = (bench_returns["adjclose"] - bench_returns["adjclose"].shift(1)) / bench_returns["adjclose"].shift(1)
@@ -34,6 +28,7 @@ class Products(object):
         bench_returns["weekly_variance"] = bench_returns["bench_weekly_return"].rolling(window=14).var()
         bench_returns["monthly_variance"] = bench_returns["bench_monthly_return"].rolling(window=14).var()
         bench_returns["quarterly_variance"] = bench_returns["bench_quarterly_return"].rolling(window=14).var()
+        bench_returns = bench_returns.groupby(["year","quarter","week"]).mean().reset_index()
         bench_returns["week"] = bench_returns["week"] + 1
         bench_returns = bench_returns.dropna()
         return bench_returns
@@ -41,17 +36,12 @@ class Products(object):
     @classmethod
     def tyields(self,tyields,maturity):
         tyields = p.column_date_processing(tyields)
-        tyields["date"] = tyields["date"] + timedelta(days=7)
-        tyields["day"] = [x.weekday() for x in tyields["date"]]
-        tyields["week"] = [x.week for x in tyields["date"]]
-        tyields["year"] = [x.year for x in tyields["date"]]
-        tyields["month"] = [x.month for x in tyields["date"]]
-        tyields["quarter"] = [x.quarter for x in tyields["date"]]
         tyields[f"yield{maturity}"] = [1+(x/100) for x in tyields["value"]]
         tyields[f"dately_yield{maturity}"] = [math.exp(math.log(x)/365) for x in tyields[f"yield{maturity}"]]
         tyields[f"weekly_yield{maturity}"] = [math.exp(math.log(x)/52) for x in tyields[f"yield{maturity}"]]
         tyields[f"monthly_yield{maturity}"] = [math.exp(math.log(x)/12) for x in tyields[f"yield{maturity}"]]
         tyields[f"quarterly_yield{maturity}"] = [math.exp(math.log(x)/4) for x in tyields[f"yield{maturity}"]]
+        tyields = tyields.groupby(["year","quarter","week"]).mean().reset_index()
         tyields[f"week"] = tyields["week"] + 1
         tyields = tyields.dropna()
         return tyields

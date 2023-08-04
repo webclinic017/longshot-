@@ -53,8 +53,8 @@ class ATradeAlgorithm(object):
         self.tyields10 = Products.tyields(self.pricer_class.market.retrieve("tyields10"),10)
         self.pricer_class.market.disconnect()
         dropped_cols = ["realtime_start","realtime_end","value"]
-        self.yields = self.tyields.merge(self.tyields2.drop(dropped_cols,axis=1),on=["year","quarter","month","week","date"],how="left") \
-                    .merge(self.tyields10.drop(dropped_cols,axis=1),on=["year","quarter","month","week","date"],how="left")
+        self.yields = self.tyields.merge(self.tyields2.drop(dropped_cols,axis=1,errors="ignore"),on=["year","quarter","month","week"],how="left") \
+                    .merge(self.tyields10.drop(dropped_cols,axis=1,errors="ignore"),on=["year","quarter","month","week"],how="left")
 
     def create_simulation(self):
         sims = []
