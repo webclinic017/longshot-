@@ -1,6 +1,5 @@
 from time_horizons.time_horizons_factory import TimeHorizonFactory
 from database.market import Market
-from database.sec import SEC
 class ARanker(object):
 
     def __init__(self,asset_class,time_horizon):
@@ -8,7 +7,6 @@ class ARanker(object):
         self.time_horizon = time_horizon
         self.intialize_time_horizon()
         self.market = Market()
-        self.sec = SEC()
         self.pull_sp500()
     
     def pull_sp500(self):
