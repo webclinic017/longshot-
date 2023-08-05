@@ -3,7 +3,6 @@ from database.market import Market
 from database.sec import SEC
 from portfolio.portfolio_fact import PortfolioFactory
 from strats.strat_fact import StratFactory as stratfact
-from modeler_strats.modeler_strat_fact import ModelerStratFactory as modelstratfact
 from diversifier.diversifier_fact import DiversifierFactory as diversifyfact
 from simulator.simulator import Simulator
 from processor.processor import Processor as p
