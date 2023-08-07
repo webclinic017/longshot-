@@ -24,7 +24,7 @@ week = current_date.isocalendar()[1]
 positions = 20
 
 pricer_classes = [] 
-pricer_classes.append(Pricer.DAILY_STOCK_ROLLING)
+pricer_classes.append(Pricer.DAILY_STOCK_WINDOW)
 pricer_classes.append(Pricer.WEEKLY_STOCK_WINDOW)
 account = alp.live_get_account()
 cash = float(account.cash)
