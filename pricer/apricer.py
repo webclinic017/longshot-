@@ -1,6 +1,5 @@
 from time_horizons.time_horizons_factory import TimeHorizonFactory
 from database.market import Market
-from database.sec import SEC
 from database.adatabase import ADatabase
 from processor.processor import Processor as p
 import pandas as pd
@@ -13,7 +12,6 @@ class APricer(object):
         self.time_horizon_class = TimeHorizonFactory.build(time_horizon)
         self.asset_class = asset_class
         self.market = Market()
-        self.sec = SEC()
         self.pull_sp500()
     
     def initialize(self):

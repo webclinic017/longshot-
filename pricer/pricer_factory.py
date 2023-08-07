@@ -1,4 +1,3 @@
-import pandas as pd
 from pricer.pricer import Pricer as pricer_list
 from pricer.window import Window
 from pricer.rolling import Rolling
@@ -14,7 +13,6 @@ class PricerFactory(object):
     @classmethod
     def build(self,pricer):
         match pricer:
-
             case pricer_list.DAILY_STOCK_ROLLING:
                 result =  Rolling(AssetClasses.STOCKS,TimeHorizons.DAILY)
             case pricer_list.WEEKLY_STOCK_ROLLING:
