@@ -28,12 +28,13 @@ pricer_classes.append(Pricer.DAILY_STOCK_WINDOW)
 pricer_classes.append(Pricer.WEEKLY_STOCK_WINDOW)
 account = alp.live_get_account()
 cash = float(account.cash)
-allocation = {"dsr_n_n_b_r":0.3,"wsw_n_n_b_r":0.7}
+allocation = {"dsw_n_n_b_r":1,"wsw_n_n_b_r":0.0}
 for pricer_class in tqdm(pricer_classes):
     try:
         trade_algo.initialize(pricer_class,ranker_class,classifier_class,start,end,current_date)
         trade_algo.initialize_classes()
         final = trade_algo.pull_recommendations()
+        print(final.index.size)
         naming = trade_algo.pricer_class.time_horizon_class.naming_convention
         final = final.sort_values(f"{naming}ly_delta",ascending=False)      
         if  naming == "week" and current_date.weekday() != 1:
@@ -47,9 +48,8 @@ for pricer_class in tqdm(pricer_classes):
                     try:
                         ticker = "BTC/USD" if row[1]["ticker"] == "BTC" else row[1]["ticker"] 
                         amount = round(algo_cash / positions,2)
-                        print(ticker,amount)
-                        # order_data.append(alp.live_market_order(ticker,amount))
-                        # sleep(1)
+                        order_data.append(alp.live_market_order(ticker,amount))
+                        sleep(1)
                     except Exception as e:
                         trade_algo.db.connect()
                         trade_algo.db.store("errors",pd.DataFrame([{"date":str(datetime.now()),"error":str(e)}]))
