@@ -18,7 +18,7 @@ market.connect()
 start = market.retrieve_max_date("stocks")
 market.disconnect()
 
-start = start.strftime("%Y-%m-%d")
+# start = start.strftime("%Y-%m-%d")
 end = datetime.now().strftime("%Y-%m-%d")
 
 # start = datetime(1999,1,1).strftime("%Y-%m-%d")
