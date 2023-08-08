@@ -261,7 +261,3 @@ class ATradeAlgorithm(object):
         iterations = self.db.retrieve("iterations")
         self.db.disconnect()
         return iterations
-    # def reset(self):
-    #     self.db.connect()
-    #     self.db.drop_all()
-    #     self.db.disconnect()
