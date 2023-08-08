@@ -12,12 +12,15 @@ live_secret_key = os.getenv("ALPACALIVESECRETKEY")
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.trading.requests import MarketOrderRequest
 
+
+## Description: alpaca trading api interface
 class AlpacaApi(object):
 
     def __init__(self):
         self.paper_trading_client = TradingClient(api_key, secret_key, paper=True)
         self.live_trading_client = TradingClient(live_api_key, live_secret_key, paper=False)
-        
+    
+    ## retrieve the paper account
     def paper_get_account(self):
         return self.paper_trading_client.get_account()
     
@@ -39,6 +42,7 @@ class AlpacaApi(object):
     def paper_close_btc(self):
         return self.paper_trading_client.close_position("BTC/USD")
     
+    ## retrieve the live account
     def live_get_account(self):
         return self.live_trading_client.get_account()
     

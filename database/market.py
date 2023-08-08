@@ -1,6 +1,8 @@
 from database.adatabase import ADatabase
 import pandas as pd
 from datetime import datetime, timedelta
+
+## description: Market database class for market based functions
 class Market(ADatabase):
     
     def __init__(self):

@@ -1,6 +1,8 @@
 import numpy as np
 from pricer.nonaipricer import NonAIPricer
 
+
+## strategy revolved around pricing based on price levels above the max price
 class DailyBreakout(NonAIPricer):
     
     def __init__(self,asset_class,time_horizon):

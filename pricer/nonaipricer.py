@@ -1,6 +1,8 @@
 from pricer.atradingpricer import ATradingPricer
 from datetime import datetime
 
+
+## description: class to store transferable nonaipricing functions
 class NonAIPricer(ATradingPricer):
 
     def __init__(self,asset_class,time_horizon):

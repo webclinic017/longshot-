@@ -182,10 +182,22 @@ class ATradeAlgorithm(object):
                 trades.append(trade)
             except Exception as e:
                 print(str(e))
-        # self.db.create_index("trades","iteration")
         self.db.disconnect()
         return pd.concat(trades)
 
+    def run_performance(self,simulation):
+        trades = []
+        self.db.connect()
+        try:
+            parameter = self.parameter
+            trade = self.backtester.backtest(simulation.copy(),parameter,False)
+            self.db.store("performance",trade)
+            trades.append(trade)
+        except Exception as e:
+            print(str(e))
+        self.db.disconnect()
+        return pd.concat(trades)
+    
     def run_recommendation(self,simulation):
         trades = []
         self.db.cloud_connect()
@@ -209,21 +221,25 @@ class ATradeAlgorithm(object):
         self.db.cloud_connect()
         recs = self.db.drop("recs")
         self.db.disconnect()
+        return recs   
+
+    def drop_performance(self):
+        self.db.connect()
+        recs = self.db.drop("performance")
+        self.db.disconnect()
         return recs    
+    
+    def drop_trades(self):
+        self.db.connect()
+        recs = self.db.drop("trades")
+        self.db.disconnect()
+        return recs  
     
     def pull_recommendations(self):
         self.db.cloud_connect()
         recs = self.db.retrieve("recs")
         self.db.disconnect()
         return recs
-    
-    def pull_historical_trades(self):
-        self.db.connect()
-        trade = self.db.retrieve("historical_trades")
-        self.db.disconnect()
-        trade["strat"] = self.name
-        trade["positions"] = self.pricer_class.positions
-        return trade
 
     def pull_trades(self):
         self.db.connect()
@@ -233,7 +249,15 @@ class ATradeAlgorithm(object):
         trade["positions"] = self.pricer_class.positions
         return trade
     
-    def reset(self):
+    def pull_performance(self):
         self.db.connect()
-        self.db.drop_all()
+        trade = self.db.retrieve("performance")
         self.db.disconnect()
+        trade["strat"] = self.name
+        trade["positions"] = self.pricer_class.positions
+        return trade
+    
+    # def reset(self):
+    #     self.db.connect()
+    #     self.db.drop_all()
+    #     self.db.disconnect()

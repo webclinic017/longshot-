@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 
-## Analysis transformations
+## description: the analysis class for reporting and performance checking
 class Analysis(object):
 
     def __init__(self,naming):
         self.naming = naming
+
 
     ## converting trade data into portfolio data and performance data
     def trade_analysis(self,ledger,positions,tyields,bench_returns):
@@ -30,6 +31,7 @@ class Analysis(object):
         cumulative["sharpe"] = (cumulative["pv"] - tyields[f"{self.naming}ly_yield10"].mean()) / cumulative["beta"].mean()
         return cumulative
     
+    ## function to analyze the best iteration of a trade algorithms backtest
     def iteration_analysis(self,portfolio,positions,bench):
         counted_columns = [x for x in range(positions)]
         daily_returns = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in portfolio.iterrows()]

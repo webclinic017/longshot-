@@ -1,6 +1,8 @@
 import numpy as np
 from pricer.nonaipricer import NonAIPricer
 
+
+## strategy revolved around applying standard deviation in pricing derived from rolling averages
 class DevRolling(NonAIPricer):
     
     def __init__(self,asset_class,time_horizon):

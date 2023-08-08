@@ -1,6 +1,7 @@
 import numpy as np
 from pricer.nonaipricer import NonAIPricer
 
+## class to store a pricing strategy revolved around rolling average prices from the past
 class Rolling(NonAIPricer):
     
     def __init__(self,asset_class,time_horizon):

@@ -6,6 +6,8 @@ import pandas as pd
 from database.adatabase import ADatabase
 from tqdm import tqdm
 
+
+# description: class for pricing strategies
 class APricer(object):
     
     def __init__(self,asset_class,time_horizon):

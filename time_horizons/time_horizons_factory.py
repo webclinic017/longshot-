@@ -39,26 +39,6 @@ class TimeHorizonFactory(object):
                                       ,instances_per_year=12
                                       ,holding_period=20
                                       )
-            case TimeHorizons.QUARTERLY:
-                result = ATimeHorizon(name="quarter"
-                                      ,naming_convention="quarter"
-                                      ,y_column="adjclose"
-                                      ,y_pivot_number=1
-                                      ,model_offset=4
-                                      ,rolling=8
-                                      ,window=4
-                                      ,instances_per_year=4
-                                      ,holding_period=60
-                                      )
-            # case TimeHorizons.YEARLY:
-            #     result = ATimeHorizon(name="year"
-            #                           ,naming_convention="year"
-            #                           ,y_column="adjclose"
-            #                           ,y_pivot_number=1
-            #                           ,model_offset=4
-            #                           ,rolling=5
-            #                           ,window=1
-            #                           )
             case _:
                 result = None
         return result

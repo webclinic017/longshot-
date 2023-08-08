@@ -1,18 +1,18 @@
 
-
+## description: parameter class to store and create parameters for backtests
 class Parameters(object):
 
     @classmethod
     def parameters(self):
         values = [True]
-        ceilings = [False]
+        ceilings = [True,False]
         classifications = [False]
         ranks = [False]
         risks = ["flat","rrr","none"]
-        tyields = ["tyield1"]
+        tyields = ["tyield1","tyield2","tyield10"]
         buy_days = [1]
-        parameters = []
         floor_values= [1]
+        parameters = []
         for value in values:
             for ceiling in ceilings:
                 for classification in classifications:

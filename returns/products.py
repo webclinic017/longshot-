@@ -28,8 +28,8 @@ class Products(object):
         bench_returns["weekly_variance"] = bench_returns["bench_weekly_return"].rolling(window=14).var()
         bench_returns["monthly_variance"] = bench_returns["bench_monthly_return"].rolling(window=14).var()
         bench_returns["quarterly_variance"] = bench_returns["bench_quarterly_return"].rolling(window=14).var()
-        bench_returns = bench_returns.groupby(["year","quarter","week"]).mean().reset_index()
-        bench_returns["week"] = bench_returns["week"] + 1
+        bench_returns = bench_returns.groupby(["year","quarter","week","date"]).mean().reset_index()
+        # bench_returns["week"] = bench_returns["week"] + 1
         bench_returns = bench_returns.dropna()
         return bench_returns
 
@@ -41,7 +41,7 @@ class Products(object):
         tyields[f"weekly_yield{maturity}"] = [math.exp(math.log(x)/52) for x in tyields[f"yield{maturity}"]]
         tyields[f"monthly_yield{maturity}"] = [math.exp(math.log(x)/12) for x in tyields[f"yield{maturity}"]]
         tyields[f"quarterly_yield{maturity}"] = [math.exp(math.log(x)/4) for x in tyields[f"yield{maturity}"]]
-        tyields = tyields.groupby(["year","quarter","week"]).mean().reset_index()
-        tyields[f"week"] = tyields["week"] + 1
+        tyields = tyields.groupby(["year","quarter","week","date"]).mean().reset_index()
+        # tyields[f"week"] = tyields["week"] + 1
         tyields = tyields.dropna()
         return tyields

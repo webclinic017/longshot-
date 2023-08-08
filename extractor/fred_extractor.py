@@ -6,6 +6,8 @@ token = os.getenv("FREDKEY")
 import pandas as pd
 import numpy as np
 
+
+## fred api extractor class
 class FREDExtractor(object):
 
     @classmethod

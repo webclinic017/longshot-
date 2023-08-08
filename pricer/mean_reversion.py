@@ -1,6 +1,7 @@
 import numpy as np
 from pricer.nonaipricer import NonAIPricer
 
+## strategy is revolved around the difference between rolling 20 and rolling 5 day averages
 class MeanReversion(NonAIPricer):
     
     def __init__(self,asset_class,time_horizon):
