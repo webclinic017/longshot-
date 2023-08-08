@@ -5,11 +5,11 @@ class Parameters(object):
     @classmethod
     def parameters(self):
         values = [True]
-        ceilings = [True,False]
+        ceilings = [False]
         classifications = [False]
         ranks = [False]
         risks = ["flat","rrr","none"]
-        tyields = ["tyield1","tyield2","tyield10"]
+        tyields = ["tyield1"]
         buy_days = [1]
         floor_values= [1]
         parameters = []
