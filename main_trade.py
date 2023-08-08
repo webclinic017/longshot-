@@ -21,13 +21,14 @@ start = datetime(2023,1,1)
 end = datetime.now()
 current_date = datetime.now()
 week = current_date.isocalendar()[1]
-positions = 20
 
+positions = 20
 pricer_classes = [] 
 pricer_classes.append(Pricer.DAILY_STOCK_ROLLING)
+pricer_classes.append(Pricer.WEEKLY_STOCK_WINDOW)
 account = alp.live_get_account()
 cash = float(account.cash)
-allocation = {"dsr_n_n_b_r":1}
+allocation = {"dsr_n_n_b_r":0.5,"wsw_n_n_b_r":0.5}
 
 for pricer_class in tqdm(pricer_classes):
     try:
@@ -48,8 +49,8 @@ for pricer_class in tqdm(pricer_classes):
                         ticker = "BTC/USD" if row[1]["ticker"] == "BTC" else row[1]["ticker"]
                         amount = round(algo_cash / positions,2)
                         print(ticker,amount)
-                        # order_data.append(alp.live_market_order(ticker,amount))
-                        # sleep(1)
+                        order_data.append(alp.live_market_order(ticker,amount))
+                        sleep(1)
                     except Exception as e:
                         trade_algo.db.connect()
                         trade_algo.db.store("errors",pd.DataFrame([{"date":str(datetime.now()),"error":str(e)}]))
