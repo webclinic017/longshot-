@@ -51,20 +51,20 @@ class ABacktester(object):
             sim = self.backtest_return_helper(sim,naming)
             sim["actual_returns"] = sim[return_column]
             columns.append("actual_returns")
-
-        sim["risk_boolean"] = sim[f"{naming}ly_beta"] <= sim[f"{naming}ly_beta"].mean()
-        sim["return_boolean"] = sim[f"{naming}ly_delta"] > sim[f"{naming}ly_rrr_{tyields}"]
         
         ##weekly logic
         test = sim.copy()
         ## Filtering
         if risk == "rrr":
-            test = sim[(sim["return_boolean"]==True)]
+            test["risk_boolean"] = test[f"{naming}ly_beta"] <= test[f"{naming}ly_beta"].mean()
+            test["return_boolean"] = test[f"{naming}ly_delta"] > test[f"{naming}ly_rrr_{tyields}"]
+            test = test[(test["return_boolean"]==True)]
             test = test[test["risk_boolean"] ==True]
         elif risk == "flat":
-            test = sim[(sim[f"{naming}ly_delta"]>=0.05)]
+            test = test[(test[f"{naming}ly_delta"]>=0.05)]
         else:
             test = test.copy()
+            
         if classification and "classification_prediction" in test.columns:
             test = test[test["classification_prediction"]==1.0]
         if ceiling:

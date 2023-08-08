@@ -29,6 +29,7 @@ pricer_classes.append(Pricer.WEEKLY_STOCK_WINDOW)
 account = alp.live_get_account()
 cash = float(account.cash)
 allocation = {"dsw_n_n_b_r":1,"wsw_n_n_b_r":0.0}
+
 for pricer_class in tqdm(pricer_classes):
     try:
         trade_algo.initialize(pricer_class,ranker_class,classifier_class,start,end,current_date)
