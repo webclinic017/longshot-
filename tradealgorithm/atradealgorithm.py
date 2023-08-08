@@ -18,12 +18,6 @@ class ATradeAlgorithm(object):
         self.db.connect()
         self.parameter = self.db.retrieve("optimal").to_dict("records")[0]
         self.db.disconnect()
-
-    def pull_iterations(self):
-        self.db.connect()
-        iterations = self.db.retrieve("iterations")
-        self.db.disconnect()
-        return iterations
     
     def initialize(self,pricer,ranker,classifier,backtest_start_date,backtest_end_date,current_start_date):
         self.backtest_start_date = backtest_start_date
@@ -235,6 +229,11 @@ class ATradeAlgorithm(object):
         self.db.disconnect()
         return recs  
     
+    def drop_iterations(self):
+        self.db.connect()
+        self.db.drop("iterations")
+        self.db.disconnect()
+    
     def pull_recommendations(self):
         self.db.cloud_connect()
         recs = self.db.retrieve("recs")
@@ -246,7 +245,7 @@ class ATradeAlgorithm(object):
         trade = self.db.retrieve("trades")
         self.db.disconnect()
         trade["strat"] = self.name
-        trade["positions"] = self.pricer_class.positions
+        trade["positions"] = self.positions
         return trade
     
     def pull_performance(self):
@@ -254,9 +253,14 @@ class ATradeAlgorithm(object):
         trade = self.db.retrieve("performance")
         self.db.disconnect()
         trade["strat"] = self.name
-        trade["positions"] = self.pricer_class.positions
+        trade["positions"] = self.positions
         return trade
     
+    def pull_iterations(self):
+        self.db.connect()
+        iterations = self.db.retrieve("iterations")
+        self.db.disconnect()
+        return iterations
     # def reset(self):
     #     self.db.connect()
     #     self.db.drop_all()

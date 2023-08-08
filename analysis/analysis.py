@@ -38,17 +38,17 @@ class Analysis(object):
         cumulative = portfolio[[i for i in counted_columns]].cumprod()
         cumulative["year"] = portfolio["year"]
         cumulative[self.naming] = portfolio[self.naming]
-        if self.naming == "date":
-            cumulative["week"] = [x.week for x in cumulative["date"]]
-        cumulative["pv"] = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in cumulative.iterrows()]
-        cumulative["daily_returns"] = daily_returns
-        bench = bench.fillna(method="bfill")
-        cumulative = cumulative.merge(bench[["year",self.naming,"adjclose"]],on=["year",self.naming],how="left")
-        cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
         if self.naming == "week":
             cumulative["date_string"] = [f'{int(row[1]["year"])}-W{int(row[1]["week"])}' for row in cumulative.iterrows()]
             cumulative["date"] = [datetime.strptime(x + '-1', '%G-W%V-%u') + timedelta(days=4) for x in cumulative["date_string"]]
         if self.naming == "month":
             cumulative["date"] = [datetime(int(row[1]["year"]),int(row[1]["month"]),28) for row in cumulative.iterrows()]
+        if self.naming != "week":
+            cumulative["week"] = [x.week for x in cumulative["date"]]
+        cumulative["pv"] = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in cumulative.iterrows()]
+        cumulative["daily_returns"] = daily_returns
+        bench = bench.fillna(method="bfill")
+        cumulative = cumulative.merge(bench[["year","week","adjclose"]],on=["year","week"],how="left")
+        cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
         cumulative = cumulative.fillna(method="bfill")
         return cumulative
