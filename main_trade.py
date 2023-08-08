@@ -28,7 +28,7 @@ pricer_classes.append(Pricer.DAILY_STOCK_ROLLING)
 pricer_classes.append(Pricer.WEEKLY_STOCK_WINDOW)
 account = alp.live_get_account()
 cash = float(account.cash)
-allocation = {"dsr_n_n_b_r":0.5,"wsw_n_n_b_r":0.5}
+allocation = {"dsr_n_n_b_r":1,"wsw_n_n_b_r":0.0}
 
 for pricer_class in tqdm(pricer_classes):
     try:
