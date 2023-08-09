@@ -63,9 +63,8 @@ try:
             try:
                 ticker = "BTC/USD" if row[1]["ticker"] == "BTC" else row[1]["ticker"]
                 amount = round(cash / positions,2)
-                print(ticker,amount)
-#                 order_data.append(alp.live_market_order(ticker,amount))
-#                 sleep(1)
+                alp.live_market_order(ticker,amount)
+                sleep(1)
             except Exception as e:
                 print(str(e))
 except Exception as e:
