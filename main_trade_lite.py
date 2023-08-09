@@ -36,7 +36,7 @@ for ticker in tqdm(sp500["ticker"]):
         ticker_data = p.column_date_processing(ticker_data)
         ticker_data.sort_values("date",inplace=True)
         ticker_data = ticker_data[["date","ticker","adjclose"]]
-        ticker_data["prev_close"] = ticker_data["adjclose"].shift(1)
+        ticker_data["prev_close"] = ticker_data["adjclose"]
         ticker_data[f"window_{lookback}"] = ticker_data["prev_close"].shift(lookback)
         ticker_data[f"rolling_{lookback}"] = ticker_data["prev_close"].rolling(lookback).mean()
         simulation.append(ticker_data.dropna())
