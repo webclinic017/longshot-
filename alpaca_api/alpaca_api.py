@@ -6,12 +6,12 @@ api_key = os.getenv("ALPACAKEYID")
 secret_key = os.getenv("ALPACASECRETKEY")
 live_api_key = os.getenv("ALPACALIVEKEYID")
 live_secret_key = os.getenv("ALPACALIVESECRETKEY")
-# from alpaca.trading.requests import GetAssetsRequest
-# from alpaca.trading.enums import AssetClass
-# from alpaca.trading.requests import LimitOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.trading.requests import MarketOrderRequest
-
+from alpaca.data import StockHistoricalDataClient
+from alpaca.data.requests import StockBarsRequest
+from alpaca.data.timeframe import TimeFrame
+from alpaca.data.enums import Adjustment
 
 ## Description: alpaca trading api interface
 class AlpacaApi(object):
@@ -19,6 +19,11 @@ class AlpacaApi(object):
     def __init__(self):
         self.paper_trading_client = TradingClient(api_key, secret_key, paper=True)
         self.live_trading_client = TradingClient(live_api_key, live_secret_key, paper=False)
+        self.data_client = StockHistoricalDataClient(api_key=api_key,secret_key=secret_key)
+    
+    def get_ticker_data(self,symbol,start,end):
+        sbrequest = StockBarsRequest(symbol_or_symbols=symbol,start=start,end=end,timeframe=TimeFrame.Day,adjustment=Adjustment.SPLIT)
+        return self.data_client.get_stock_bars(sbrequest)
     
     ## retrieve the paper account
     def paper_get_account(self):

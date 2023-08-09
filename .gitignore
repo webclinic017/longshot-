@@ -3,7 +3,6 @@
 *__pycache__*
 *.ipynb_checkpoints*
 catboost_info/
-*.csv
 stratbooks/
 productbooks/
 qa/
@@ -21,4 +20,3 @@ csv_files/
 sec/
 reports/
 strategy/
-sp500.csv
