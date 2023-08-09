@@ -8,6 +8,9 @@ import pandas as pd
 
 alp = AlpacaApi()
 
+closed_orders = alp.live_close_all()
+sleep(300)
+
 end = (datetime.now()-timedelta(days=1)).strftime("%Y-%m-%d")
 start = (datetime.now()-timedelta(days=1) - timedelta(days=10)).strftime("%Y-%m-%d")
 
