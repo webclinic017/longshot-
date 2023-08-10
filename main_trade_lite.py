@@ -40,7 +40,6 @@ if today.weekday() < 5:
                 ticker_data[f"window_{lookback}"] = ticker_data["prev_close"].shift(lookback)
                 ticker_data[f"rolling_{lookback}"] = ticker_data["prev_close"].rolling(lookback).mean()
                 simulation.append(ticker_data.dropna())
-                sleep(1)
             except Exception as e:
                 print(ticker,str(e))
 
@@ -48,7 +47,7 @@ if today.weekday() < 5:
         final = final[final["date"]==final["date"].max()]
 
         trades = BacktesterLite.backtest(positions,final.copy(),iteration,parameter,True)
-
+        trades.to_csv("trades.csv")
         account = alp.live_get_account()
         cash = float(account.cash)
 
@@ -58,7 +57,6 @@ if today.weekday() < 5:
                     ticker = "BTC/USD" if row[1]["ticker"] == "BTC" else row[1]["ticker"]
                     amount = round(cash / positions,2)
                     alp.live_market_order(ticker,amount)
-                    sleep(1)
                 except Exception as e:
                     print(str(e))
 
