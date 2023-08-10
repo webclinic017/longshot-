@@ -11,7 +11,7 @@ today = datetime.now()
 end = (datetime.now()-timedelta(days=1)).strftime("%Y-%m-%d")
 start = (datetime.now()-timedelta(days=1) - timedelta(days=10)).strftime("%Y-%m-%d")
 
-sp500 = pd.read_csv("sp500.csv").rename(columns={"Symbol":"ticker"})
+sp500 = pd.read_csv("./sp500.csv").rename(columns={"Symbol":"ticker"})
 
 parameter = {
 'strategy': 'window',
@@ -25,9 +25,11 @@ lookback = parameter["lookback"]
 
 if today.weekday() < 5:
     try:
-        closed_orders = alp.live_close_all()
-        sleep(300)
-
+        try:
+            closed_orders = alp.live_close_all()
+            sleep(300)
+        except Exception as e:
+            print(str(e))
         simulation = []
         for ticker in tqdm(sp500["ticker"]):
             try:
@@ -50,7 +52,7 @@ if today.weekday() < 5:
         account = alp.live_get_account()
         cash = float(account.cash)
 
-        if trades.index.size > 0: 
+        if trades.index.size > 0:
             for row in trades.iterrows():
                 try:
                     ticker = "BTC/USD" if row[1]["ticker"] == "BTC" else row[1]["ticker"]
