@@ -47,7 +47,6 @@ if today.weekday() < 5:
         final = final[final["date"]==final["date"].max()]
 
         trades = BacktesterLite.backtest(positions,final.copy(),iteration,parameter,True)
-        trades.to_csv("trades.csv")
         account = alp.live_get_account()
         cash = float(account.cash)
 
