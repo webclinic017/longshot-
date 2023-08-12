@@ -11,7 +11,8 @@ today = datetime.now()
 end = (datetime.now()-timedelta(days=1)).strftime("%Y-%m-%d")
 start = (datetime.now()-timedelta(days=1) - timedelta(days=10)).strftime("%Y-%m-%d")
 
-sp500 = pd.read_csv("./sp500.csv").rename(columns={"Symbol":"ticker"})
+sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",attrs={"id":"constituents"})[0]
+sp500.rename(columns={"Symbol":"ticker"},inplace=True)
 
 parameter = {
 'strategy': 'window',

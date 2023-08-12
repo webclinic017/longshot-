@@ -34,17 +34,23 @@ class Parameters(object):
         return parameters
     
     @classmethod
-    def parameters_lite(self,lookbacks):
+    def parameters_lite(self,lookbacks,holding_periods,ceilings,floors):
         values = [True,False]
         parameters = []
         strategies = ["rolling","window"]
         for strategy in strategies:
             for value in values:
                 for lookback in lookbacks:
-                    parameter = {
-                            "strategy":strategy
-                            ,"value":value
-                            ,"lookback":lookback
-                        }
-                    parameters.append(parameter)
+                    for ceiling in ceilings:
+                        for floor in floors:
+                            for holding_period in holding_periods:
+                                parameter = {
+                                        "strategy":strategy
+                                        ,"value":value
+                                        ,"lookback":lookback
+                                        ,"holding_period":holding_period
+                                        ,"floor":floor
+                                        ,"ceiling":ceiling
+                                    }
+                                parameters.append(parameter)
         return parameters
