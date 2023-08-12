@@ -16,7 +16,6 @@ sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 sp500.rename(columns={"Symbol":"ticker"},inplace=True)
 
 stock_parameter = {
-
  "asset":"stocks",
  'strategy': 'window',
  'value': True,
@@ -58,7 +57,7 @@ if today.weekday() < 5:
             print(str(e))
     
     account = alp.live_get_account()
-    cash = float(account.cash * 0.995)
+    cash = float(account.cash) * 0.995
     
     for parameter in parameters:
         try:
