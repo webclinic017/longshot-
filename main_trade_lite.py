@@ -1,13 +1,11 @@
 from datetime import datetime, timedelta
 from processor.processor import Processor as p
-from tqdm import tqdm
 from alpaca_api.alpaca_api import AlpacaApi
 from backtester.backtester_lite import BacktesterLite
 from time import sleep
 import pandas as pd
 
 live = False
-
 
 alp = AlpacaApi()
 today = datetime.now()
@@ -18,6 +16,7 @@ sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 sp500.rename(columns={"Symbol":"ticker"},inplace=True)
 
 stock_parameter = {
+
  "asset":"stocks",
  'strategy': 'window',
  'value': True,
@@ -26,10 +25,12 @@ stock_parameter = {
  'floor': -10,
  'ceiling': 10,
  "positions":20,
- "allocation":0.9
+ "allocation":1
+
 }
 
 crypto_parameter = {
+
  "asset":"crypto",
  'strategy': 'rolling',
  'value': False,
@@ -38,7 +39,8 @@ crypto_parameter = {
  'floor': 0,
  'ceiling': 0.5,
  "positions":1,
- "allocation":0.1
+ "allocation":0.0
+
 }
 
 parameters = []
@@ -68,7 +70,6 @@ if today.weekday() < 5:
             simulation = []
             for ticker in tickers:
                 try:
-                    print(ticker)
                     if asset == "stocks":
                         example = alp.get_ticker_data(ticker,start,end)
                         ticker_data = example.df.reset_index().rename(columns={"symbol":"ticker","timestamp":"date","close":"adjclose"})[["date","ticker","adjclose"]]
