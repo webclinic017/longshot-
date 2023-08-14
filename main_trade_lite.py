@@ -16,6 +16,7 @@ sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 sp500.rename(columns={"Symbol":"ticker"},inplace=True)
 
 stock_parameter = {
+
  'strategy': 'rolling',
  'value': True,
  'lookback': 60,
@@ -23,22 +24,21 @@ stock_parameter = {
  'floor': 0,
  'ceiling': 10,
  'volatility': 1
+
 }
 
 
 crypto_parameter = {
-
- "asset":"crypto",
+ 
  'strategy': 'rolling',
  'value': False,
  'lookback': 5,
  'holding_period': 1,
  'floor': 0,
- 'ceiling': 0.5,
- "positions":1,
- "allocation":0.0
-
-}
+ 'ceiling': 1,
+ 'volatility': 0.5
+ 
+ }
 
 parameters = []
 # parameters.append(crypto_parameter)
