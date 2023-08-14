@@ -5,7 +5,7 @@ from backtester.backtester_lite import BacktesterLite
 from time import sleep
 import pandas as pd
 
-live = False
+live = True
 
 alp = AlpacaApi()
 today = datetime.now()
@@ -16,17 +16,15 @@ sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 sp500.rename(columns={"Symbol":"ticker"},inplace=True)
 
 stock_parameter = {
- "asset":"stocks",
- 'strategy': 'window',
+ 'strategy': 'rolling',
  'value': True,
- 'lookback': 5,
- 'holding_period': 1,
- 'floor': -10,
+ 'lookback': 60,
+ 'holding_period': 5,
+ 'floor': 0,
  'ceiling': 10,
- "positions":20,
- "allocation":1
-
+ 'volatility': 1
 }
+
 
 crypto_parameter = {
 
