@@ -5,7 +5,7 @@ from backtester.backtester_lite import BacktesterLite
 from time import sleep
 import pandas as pd
 
-live = True
+live = False
 
 alp = AlpacaApi()
 today = datetime.now()
@@ -18,26 +18,32 @@ sp500.rename(columns={"Symbol":"ticker"},inplace=True)
 stock_parameter = {
 
  'strategy': 'rolling',
+ "asset":"stocks",
  'value': True,
  'lookback': 60,
  'holding_period': 5,
  'floor': 0,
  'ceiling': 10,
- 'volatility': 1
+ 'volatility': 1,
+ "positions":20,
+ "allocation":1
 
 }
 
 
 crypto_parameter = {
- 
+
  'strategy': 'rolling',
+ "asset":"crypto",
  'value': False,
  'lookback': 5,
  'holding_period': 1,
  'floor': 0,
  'ceiling': 1,
- 'volatility': 0.5
- 
+ 'volatility': 0.5,
+ "positions":1,
+ "allocation":0
+
  }
 
 parameters = []
@@ -53,10 +59,10 @@ if today.weekday() < 5:
             sleep(300)
         except Exception as e:
             print(str(e))
-    
+
     account = alp.live_get_account()
     cash = float(account.cash) * 0.995
-    
+
     for parameter in parameters:
         try:
             asset = parameter["asset"]
@@ -74,7 +80,7 @@ if today.weekday() < 5:
                         example = alp.get_crypto_data(ticker,start,end)
                         ticker_data = example.df.reset_index().rename(columns={"timestamp":"date","close":"adjclose"})[["date","adjclose"]]
                         ticker_data["ticker"] = ticker
-                    
+
                     ticker_data = p.column_date_processing(ticker_data)
                     ticker_data.sort_values("date",inplace=True)
                     ticker_data["week"] = [x.week for x in ticker_data["date"]]
@@ -82,6 +88,8 @@ if today.weekday() < 5:
                     ticker_data["prev_close"] = ticker_data["adjclose"]
                     ticker_data[f"window_{lookback}"] = ticker_data["prev_close"].shift(lookback)
                     ticker_data[f"rolling_{lookback}"] = ticker_data["prev_close"].rolling(lookback).mean()
+                    ticker_data[f"rolling_stdev_{lookback}"] = ticker_data["prev_close"].rolling(lookback).std()
+                    ticker_data[f"rolling_pct_stdev_{lookback}"] = ticker_data[f"rolling_stdev_{lookback}"] / ticker_data[f"rolling_{lookback}"]
                     simulation.append(ticker_data.dropna())
                 except Exception as e:
                     print(ticker,str(e))
