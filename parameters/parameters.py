@@ -34,7 +34,7 @@ class Parameters(object):
         return parameters
     
     @classmethod
-    def parameters_lite(self,lookbacks,holding_periods,ceilings,floors,volatilities):
+    def parameters_lite(self,lookbacks,holding_periods,ceilings,floors,volatilities,local_mins):
         values = [True,False]
         parameters = []
         strategies = ["rolling","window"]
@@ -45,14 +45,16 @@ class Parameters(object):
                         for floor in floors:
                             for holding_period in holding_periods:
                                 for volatility in volatilities:
-                                    parameter = {
-                                            "strategy":strategy
-                                            ,"value":value
-                                            ,"lookback":lookback
-                                            ,"holding_period":holding_period
-                                            ,"floor":floor
-                                            ,"ceiling":ceiling
-                                            ,"volatility":volatility
-                                        }
-                                    parameters.append(parameter)
+                                    for local_min in local_mins:
+                                        parameter = {
+                                                "strategy":strategy
+                                                ,"value":value
+                                                ,"lookback":lookback
+                                                ,"holding_period":holding_period
+                                                ,"floor":floor
+                                                ,"ceiling":ceiling
+                                                ,"volatility":volatility
+                                                ,"local_min":local_min
+                                            }
+                                        parameters.append(parameter)
         return parameters

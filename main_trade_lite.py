@@ -24,6 +24,7 @@ stock_parameter = {
  'floor': -10,
  'ceiling': 10,
  'volatility': 1,
+ "local_min":False,
  "asset":"stocks",
  "positions":20,
  "allocation":1
@@ -32,17 +33,15 @@ stock_parameter = {
 
 
 crypto_parameter = {
-
+    
  'strategy': 'rolling',
- "asset":"crypto",
  'value': False,
  'lookback': 5,
  'holding_period': 1,
  'floor': 0,
- 'ceiling': 1,
+ 'ceiling': 10,
  'volatility': 0.5,
- "positions":1,
- "allocation":0
+ 'local_min': False
 
  }
 
@@ -86,6 +85,7 @@ if today.weekday() < 5:
                     ticker_data["week"] = [x.week for x in ticker_data["date"]]
                     ticker_data["day"] = [x.weekday() for x in ticker_data["date"]]
                     ticker_data["prev_close"] = ticker_data["adjclose"]
+                    ticker_data["d1"] = ticker_data[f"adjclose"].pct_change()
                     ticker_data[f"window_{lookback}"] = ticker_data["prev_close"].shift(lookback)
                     ticker_data[f"rolling_{lookback}"] = ticker_data["prev_close"].rolling(lookback).mean()
                     ticker_data[f"rolling_stdev_{lookback}"] = ticker_data["prev_close"].rolling(lookback).std()
