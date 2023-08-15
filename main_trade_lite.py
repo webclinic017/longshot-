@@ -10,21 +10,21 @@ live = False
 alp = AlpacaApi()
 today = datetime.now()
 end = (datetime.now()-timedelta(days=1)).strftime("%Y-%m-%d")
-start = (datetime.now()-timedelta(days=1) - timedelta(days=100)).strftime("%Y-%m-%d")
+start = (datetime.now()-timedelta(days=1) - timedelta(days=10)).strftime("%Y-%m-%d")
 
 sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",attrs={"id":"constituents"})[0]
 sp500.rename(columns={"Symbol":"ticker"},inplace=True)
 
 stock_parameter = {
-
- 'strategy': 'rolling',
- "asset":"stocks",
+ 
+ 'strategy': 'window',
  'value': True,
- 'lookback': 60,
- 'holding_period': 5,
- 'floor': 0,
+ 'lookback': 5,
+ 'holding_period': 1,
+ 'floor': -10,
  'ceiling': 10,
  'volatility': 1,
+ "asset":"stocks",
  "positions":20,
  "allocation":1
 
