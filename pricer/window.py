@@ -1,8 +1,8 @@
 import numpy as np
-from pricer.nonaipricer import NonAIPricer
+from data_product.anonai_data_product import NonAIDataProduct
 
-## class to store a pricing strategy revolved around prices from a specific number of days in the past
-class Window(NonAIPricer):
+## class to store a pricing strategy revolved around window average prices from the past
+class Window(NonAIDataProduct):
 
     def __init__(self,asset_class,time_horizon):
         super().__init__(asset_class,time_horizon)

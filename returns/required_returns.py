@@ -1,11 +1,12 @@
 import math
 import numpy as np
+from returns.areturns import AReturns
 
-class RequiredReturn(object):
+class RequiredReturn(AReturns):
     def __init__(self):
-        self.name = "RR"
-
-    def returns(self,market_return,atime_horizon,simulation,current,yields):
+        super.__init__("RR")
+    
+    def required_returns(self,market_return,atime_horizon,simulation,current,yields):
         naming = atime_horizon.naming_convention
         n = atime_horizon.instances_per_year
         simulation = simulation.merge(yields.drop(["quarter","month"],axis=1),on=["year","week"],how="left").dropna()

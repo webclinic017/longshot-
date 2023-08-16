@@ -53,3 +53,20 @@ class ADataProduct(object):
         self.db.connect()
         self.db.drop("recs")
         self.db.disconnect()
+    
+    def training_set(self):
+        self.market.connect()
+        training_sets = []
+        for ticker in self.sp500["ticker"].unique():
+            try:
+                prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
+                prices = p.column_date_processing(prices)
+                ticker_data = self.training_set_helper(ticker,prices,False)
+                training_sets.append(ticker_data)
+            except Exception as e:
+                print(str(e))
+                continue
+        self.market.disconnect()
+        data = pd.concat(training_sets)
+        training_data = data.dropna().copy().sort_values(["year",self.time_horizon_class.naming_convention])
+        self.training_data = training_data
