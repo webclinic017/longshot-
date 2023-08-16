@@ -1,10 +1,9 @@
 from processor.processor import Processor as p
 import pandas as pd
 from database.adatabase import ADatabase
-import numpy as np
-from strategy.aistrategy import AIStrategy
+from ranker.nonairanker import NonAIRanker
 
-class Speculation(AIStrategy):
+class Dividends(NonAIRanker):
 
     def __init__(self,asset_class,quarterly):
         super().__init__(asset_class,quarterly)

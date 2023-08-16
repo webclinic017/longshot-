@@ -54,6 +54,7 @@ class ABacktester(object):
         tyields = parameter["tyields"]
         risk = parameter["risk"]
         floor_value = parameter["floor_value"]
+        rank = parameter["rank"]
         naming = self.trade_algorithm.pricer_class.time_horizon_class.naming_convention
         positions = self.trade_algorithm.positions
         sim = sim[(sim["year"] >= start_date.year) & (sim["year"] <= end_date.year)]
@@ -84,7 +85,9 @@ class ABacktester(object):
             test = test[(test[f"{naming}ly_delta"]>=0.05)]
         else:
             test = test.copy()
-            
+        if rank and "rank" in test.columns:
+            test = test[test["rank"]>=self.strategy.ranker_class.lower_bound]    
+        
         if classification and "classification_prediction" in test.columns:
             test = test[test["classification_prediction"]==1.0]
         if ceiling:

@@ -1,9 +1,7 @@
 from processor.processor import Processor as p
 from pricer.apricer import APricer
 
-## high level pricer class for trade algorithms, stores transferable functions relevant to 
-## other trade pricers
-class ATradingPricer(APricer):
+class AStrategyPricer(APricer):
 
     def __init__(self,asset_class,time_horizon):
         super().__init__(asset_class,time_horizon)

@@ -1,17 +1,19 @@
 import pandas as pd
 from database.market import Market
-from database.adatabase import ADatabase
-from datetime import datetime, timedelta
+from datetime import datetime
 from tqdm import tqdm
 from extractor.tiingo_extractor import TiingoExtractor
 from extractor.forex_extractor import FOREXExtractor
 from extractor.fred_extractor import FREDExtractor
 from processor.processor import Processor as p
 
+sp5 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",attrs={"id":"constituents"})[0]
+
 market = Market()
-sp500 = ADatabase("sp500")
+
 market.connect()
-sp5 = market.retrieve("sp500")
+market.drop("sp500")
+market.store("sp500",sp5)
 market.disconnect()
 
 market.connect()

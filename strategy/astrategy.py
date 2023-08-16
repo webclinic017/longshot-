@@ -8,16 +8,12 @@ from returns.products import Products
 from parameters.parameters import Parameters as params
 from database.adatabase import ADatabase
 from tqdm import tqdm
-class ATradeAlgorithm(object):
+
+class AStrategy(object):
 
     def __init__(self,returns,risk):
         self.returns = returns
         self.risk = risk
-
-    def load_optimal_parameter(self):
-        self.db.connect()
-        self.parameter = self.db.retrieve("optimal").to_dict("records")[0]
-        self.db.disconnect()
     
     def initialize(self,pricer,ranker,classifier,backtest_start_date,backtest_end_date,current_start_date):
         self.backtest_start_date = backtest_start_date
@@ -28,13 +24,13 @@ class ATradeAlgorithm(object):
         self.classifier_class = classifier_fact.build(classifier)
         self.analysis = Analysis(self.pricer_class.time_horizon_class.name)
         self.market_return = 1.15
-        self.positions = 20 if self.pricer_class.asset_class.value == "stocks" else 1
+        self.positions = 11
 
     def initialize_classes(self):
         self.pricer_class.initialize()
-        self.classifier_name = self.classifier_class.name if self.classifier_class != None else str(None)
-        self.ranker_name = self.ranker_class.name if self.ranker_class != None else str(None)
-        self.names = [self.pricer_class.name,self.classifier_name,self.ranker_name,self.risk.name,self.returns.name]
+        self.ranker_class.initialize()
+        self.classifier_class.initialize()
+        self.names = [self.pricer_class.name,self.classifier_name,self.ranker_class.name,self.risk.name,self.returns.name]
         self.acronyms = ["".join([subname[0] for subname in x.split("_")]) for x in self.names]
         self.name = "_".join(self.acronyms).lower()
         self.db = ADatabase(self.name)
@@ -53,10 +49,8 @@ class ATradeAlgorithm(object):
     def create_simulation(self):
         sims = []
         pricer_sim = self.pull_pricer_sim()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","price_prediction"]]
-        if self.pricer_class.time_horizon_class.naming_convention == "week":
-            pricer_sim = pricer_sim[pricer_sim["week"]< 54]
         if self.ranker_class != None:
-            ranker_sim = self.pull_ranker_sim()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","rank_prediction"]]
+            ranker_sim = self.pull_ranker_sim()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","rank"]]
             sims.append(ranker_sim)
         if self.classifier_class != None:
             classifier_sim = self.pull_classifier_sim()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","classification_prediction"]]
@@ -92,10 +86,8 @@ class ATradeAlgorithm(object):
     def create_current_simulation(self):
         sims = []
         pricer_sim = self.pull_pricer_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","price_prediction"]]
-        if self.pricer_class.time_horizon_class.naming_convention == "week":
-            pricer_sim = pricer_sim[pricer_sim["week"]< 54]
         if self.ranker_class != None:
-            ranker_sim = self.pull_ranker_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","rank_prediction"]]
+            ranker_sim = self.pull_ranker_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","rank"]]
             sims.append(ranker_sim)
         if self.classifier_class != None:
             classifier_sim = self.pull_classifier_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","classification_prediction"]]
@@ -152,6 +144,7 @@ class ATradeAlgorithm(object):
     
     def merge_sim_returns(self,sim,returns):
         merged = sim.merge(returns,on=["year",self.pricer_class.time_horizon_class.naming_convention,"ticker"],how="left")
+        merged = merged.merge(self.pricer_class.sp500[["ticker","GICS Sector"]],on="ticker",how="left")
         return merged
     
     def apply_yields(self,sim,rec):
@@ -179,19 +172,6 @@ class ATradeAlgorithm(object):
         self.db.disconnect()
         return pd.concat(trades)
 
-    def run_performance(self,simulation):
-        trades = []
-        self.db.connect()
-        try:
-            parameter = self.parameter
-            trade = self.backtester.backtest(simulation.copy(),parameter,False)
-            self.db.store("performance",trade)
-            trades.append(trade)
-        except Exception as e:
-            print(str(e))
-        self.db.disconnect()
-        return pd.concat(trades)
-    
     def run_recommendation(self,simulation):
         trades = []
         self.db.cloud_connect()
@@ -204,36 +184,32 @@ class ATradeAlgorithm(object):
             print(str(e))
         self.db.disconnect()
         return pd.concat(trades)
-             
-    def pull_orders(self):
-        self.db.cloud_connect()
-        orders = self.db.retrieve("orders")
-        self.db.disconnect()
-        return orders
     
-    def drop_recommendations(self):
-        self.db.cloud_connect()
-        recs = self.db.drop("recs")
+    def run_performance(self,simulation):
+        trades = []
+        self.db.connect()
+        self.db.create_index("trades","iteration")
+        parameter = self.parameter
+        try:
+            trade = self.backtester.backtest(simulation.copy(),parameter,False)
+            self.db.store("performance",trade)
+            trades.append(trade)
+        except Exception as e:
+            print(str(e))
         self.db.disconnect()
-        return recs   
+        return pd.concat(trades)
+    
+    def load_optimal_parameter(self):
+        self.db.connect()
+        self.parameter = self.db.retrieve("optimal").to_dict("records")[0]
+        self.db.disconnect()
 
-    def drop_performance(self):
+    def pull_iterations(self):
         self.db.connect()
-        recs = self.db.drop("performance")
+        iterations = self.db.retrieve("iterations")
         self.db.disconnect()
-        return recs    
-    
-    def drop_trades(self):
-        self.db.connect()
-        recs = self.db.drop("trades")
-        self.db.disconnect()
-        return recs  
-    
-    def drop_iterations(self):
-        self.db.connect()
-        self.db.drop("iterations")
-        self.db.disconnect()
-    
+        return iterations      
+     
     def pull_recommendations(self):
         self.db.cloud_connect()
         recs = self.db.retrieve("recs")
@@ -256,8 +232,26 @@ class ATradeAlgorithm(object):
         trade["positions"] = self.positions
         return trade
     
-    def pull_iterations(self):
+    def drop_performance(self):
         self.db.connect()
-        iterations = self.db.retrieve("iterations")
+        recs = self.db.drop("performance")
         self.db.disconnect()
-        return iterations
+        return recs
+    
+    def drop_recommendations(self):
+        self.db.cloud_connect()
+        recs = self.db.drop("recs")
+        self.db.disconnect()
+        return recs   
+
+    def drop_trades(self):
+        self.db.connect()
+        recs = self.db.drop("trades")
+        self.db.disconnect()
+        return recs   
+    
+    def drop_iterations(self):
+        self.db.connect()
+        recs = self.db.drop("iterations")
+        self.db.disconnect()
+        return recs   

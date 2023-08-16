@@ -1,9 +1,6 @@
-from pricer.astrategypricer import AStrategyPricer
+from classifier.astrategyclassifier import AStrategyClassifier
 from datetime import datetime
-
-
-## description: class to store transferable nonaipricing functions
-class NonAIPricer(AStrategyPricer):
+class NonAIClassifier(AStrategyClassifier):
 
     def __init__(self,asset_class,time_horizon):
         super().__init__(asset_class,time_horizon)

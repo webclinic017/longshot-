@@ -6,27 +6,27 @@ class TimeHorizonFactory(object):
     @classmethod
     def build(self,time_horizon):
         match time_horizon:
-            case TimeHorizons.WEEKLY:
-                result = ATimeHorizon(name="week"
-                                      ,naming_convention="week"
-                                      ,y_column="adjclose"
-                                      ,y_pivot_number=1
-                                      ,model_offset=4
-                                      ,rolling=50
-                                      ,window=10
-                                      ,instances_per_year=52
-                                      ,holding_period=5
-                                      )
             case TimeHorizons.DAILY:
                 result = ATimeHorizon(name="date"
                                       ,naming_convention="date"
                                       ,y_column="adjclose"
                                       ,y_pivot_number=1
                                       ,model_offset=4
-                                      ,rolling=20
-                                      ,window=5
+                                      ,rolling=5
+                                      ,window=1
                                       ,instances_per_year=365
                                       ,holding_period=1
+                                      )
+            case TimeHorizons.WEEKLY:
+                result = ATimeHorizon(name="week"
+                                      ,naming_convention="week"
+                                      ,y_column="adjclose"
+                                      ,y_pivot_number=1
+                                      ,model_offset=4
+                                      ,rolling=25
+                                      ,window=5
+                                      ,instances_per_year=52
+                                      ,holding_period=5
                                       )
             case TimeHorizons.MONTHLY:
                 result = ATimeHorizon(name="month"
@@ -34,10 +34,32 @@ class TimeHorizonFactory(object):
                                       ,y_column="adjclose"
                                       ,y_pivot_number=1
                                       ,model_offset=4
-                                      ,rolling=12
-                                      ,window=3
+                                      ,rolling=100
+                                      ,window=20
                                       ,instances_per_year=12
                                       ,holding_period=20
+                                      )
+            case TimeHorizons.QUARTERLY:
+                result = ATimeHorizon(name="quarter"
+                                      ,naming_convention="quarter"
+                                      ,y_column="adjclose"
+                                      ,y_pivot_number=1
+                                      ,model_offset=4
+                                      ,rolling=300
+                                      ,window=60
+                                      ,instances_per_year=4
+                                      ,holding_period=60
+                                      )
+            case TimeHorizons.YEARLY:
+                result = ATimeHorizon(name="year"
+                                      ,naming_convention="year"
+                                      ,y_column="adjclose"
+                                      ,y_pivot_number=1
+                                      ,model_offset=4
+                                      ,rolling=1300
+                                      ,window=260
+                                      ,instances_per_year=1
+                                      ,holding_period=260
                                       )
             case _:
                 result = None
