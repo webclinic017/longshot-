@@ -10,6 +10,7 @@ class BacktesterLite(object):
         holding_period = parameter["holding_period"]
         floor = parameter["floor"]
         ceiling = parameter["ceiling"]
+        weekend = parameter["weekend"]
         volatility = parameter["volatility"]
         local_min = parameter["local_min"]
         iteration_sim["signal"] = (iteration_sim[f"{strategy}_{lookback}"] - iteration_sim["prev_close"]) / iteration_sim["prev_close"]
@@ -31,7 +32,8 @@ class BacktesterLite(object):
                 mod_val = int(holding_period / 5)
                 iteration_sim = iteration_sim[iteration_sim["week"] % mod_val == 0]
                 iteration_sim = iteration_sim[iteration_sim["day"]==1]
-
+        if weekend:
+            iteration_sim = iteration_sim[iteration_sim["day"]<4]
         if industry_weighted:
             iteration_sim = iteration_sim.sort_values(["date","signal"],ascending=False).groupby(["date","GICS Sector"]).first().reset_index()   
 

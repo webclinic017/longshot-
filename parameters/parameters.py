@@ -36,6 +36,7 @@ class Parameters(object):
         values = [True,False]
         parameters = []
         industry_weighteds = [True,False]
+        weekends = [True,False]
         strategies = ["rolling","window"]
         for strategy in strategies:
             for value in values:
@@ -46,16 +47,18 @@ class Parameters(object):
                                 for volatility in volatilities:
                                     for local_min in local_mins:
                                         for industry_weighted in industry_weighteds:
-                                            parameter = {
-                                                    "strategy":strategy
-                                                    ,"value":value
-                                                    ,"lookback":lookback
-                                                    ,"holding_period":holding_period
-                                                    ,"floor":floor
-                                                    ,"ceiling":ceiling
-                                                    ,"volatility":volatility
-                                                    ,"local_min":local_min
-                                                    ,"industry_weighted":industry_weighted
-                                                }
-                                            parameters.append(parameter)
+                                            for weekend in weekends:
+                                                parameter = {
+                                                        "strategy":strategy
+                                                        ,"value":value
+                                                        ,"lookback":lookback
+                                                        ,"holding_period":holding_period
+                                                        ,"floor":floor
+                                                        ,"ceiling":ceiling
+                                                        ,"volatility":volatility
+                                                        ,"local_min":local_min
+                                                        ,"industry_weighted":industry_weighted
+                                                        ,"weekend":weekend
+                                                    }
+                                                parameters.append(parameter)
         return parameters
