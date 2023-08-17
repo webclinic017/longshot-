@@ -4,6 +4,7 @@ class BacktesterLite(object):
     @classmethod
     def backtest(self,positions,final,iteration,parameter,current):
         iteration_sim = final.copy()
+        industry_weighted = parameter["industry_weighted"]
         strategy = parameter["strategy"]
         lookback = parameter["lookback"]
         holding_period = parameter["holding_period"]
@@ -30,8 +31,11 @@ class BacktesterLite(object):
                 mod_val = int(holding_period / 5)
                 iteration_sim = iteration_sim[iteration_sim["week"] % mod_val == 0]
                 iteration_sim = iteration_sim[iteration_sim["day"]==1]
-            
-        trades = iteration_sim.sort_values(["date","signal"]).groupby("date",as_index=True).nth([-1-i for i in range(positions)]).reset_index()[["date","ticker"]+additional_columns]
+
+        if industry_weighted:
+            iteration_sim = iteration_sim.sort_values(["date","signal"],ascending=False).groupby(["date","GICS Sector"]).first().reset_index()   
+
+        trades = iteration_sim.sort_values(["date","signal"]).groupby("date").nth([-1-i for i in range(positions)]).reset_index()[["date","ticker"]+additional_columns]
         trades["position"] = [int(x % positions) for x in trades.index.values]
         trades["iteration"] = iteration
         for key in parameter.keys():

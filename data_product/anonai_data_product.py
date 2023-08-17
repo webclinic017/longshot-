@@ -1,7 +1,7 @@
 from data_product.adata_product import ADataProduct
 from datetime import datetime
 
-class NonAIDataProduct(ADataProduct):
+class ANonAIDataProduct(ADataProduct):
 
     def __init__(self,asset_class,time_horizon):
         super().__init__(asset_class,time_horizon)

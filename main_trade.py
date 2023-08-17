@@ -36,7 +36,7 @@ for pricer_class in tqdm(pricer_classes):
         trade_algo.initialize_classes()
         final = trade_algo.pull_recommendations()
         naming = trade_algo.pricer_class.time_horizon_class.naming_convention
-        final = final.sort_values(f"{naming}ly_delta",ascending=False)      
+        final = final.sort_values(f"delta",ascending=False)      
         if  naming == "week" and current_date.weekday() != 1:
              continue
         else:

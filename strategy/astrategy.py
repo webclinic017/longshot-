@@ -30,36 +30,35 @@ class AStrategy(object):
         self.pricer_class.initialize()
         self.ranker_class.initialize()
         self.classifier_class.initialize()
-        self.names = [self.pricer_class.name,self.classifier_name,self.ranker_class.name,self.risk.name,self.returns.name]
+        self.names = [self.pricer_class.name,self.classifier_class.name,self.ranker_class.name,self.risk.name,self.returns.name]
         self.acronyms = ["".join([subname[0] for subname in x.split("_")]) for x in self.names]
-        self.name = "_".join(self.acronyms).lower()
+        self.name = "strategy_" + "_".join(self.acronyms).lower()
         self.db = ADatabase(self.name)
 
     def initialize_bench_and_yields(self):
         self.pricer_class.market.connect()
-        self.benchmark = Products.spy_bench(self.pricer_class.market.retrieve("spy"))
-        self.tyields = Products.tyields(self.pricer_class.market.retrieve("tyields"),1)
-        self.tyields2 = Products.tyields(self.pricer_class.market.retrieve("tyields2"),2)
-        self.tyields10 = Products.tyields(self.pricer_class.market.retrieve("tyields10"),10)
+        self.benchmark = Products.spy_bench(self.pricer_class.market.retrieve("spy"),self.pricer_class.time_horizon_class)
+        self.tyields = Products.tyields(self.pricer_class.market.retrieve("tyields"),1,self.pricer_class.time_horizon_class)
+        self.tyields2 = Products.tyields(self.pricer_class.market.retrieve("tyields2"),2,self.pricer_class.time_horizon_class)
+        self.tyields10 = Products.tyields(self.pricer_class.market.retrieve("tyields10"),10,self.pricer_class.time_horizon_class)
         self.pricer_class.market.disconnect()
         dropped_cols = ["realtime_start","realtime_end","value"]
-        self.yields = self.tyields.merge(self.tyields2.drop(dropped_cols,axis=1,errors="ignore"),on=["year","quarter","month","week"],how="left") \
-                    .merge(self.tyields10.drop(dropped_cols,axis=1,errors="ignore"),on=["year","quarter","month","week"],how="left")
+        self.yields = self.tyields.merge(self.tyields2.drop(dropped_cols,axis=1,errors="ignore"),on=["year","quarter","month","week","date"],how="left") \
+                    .merge(self.tyields10.drop(dropped_cols,axis=1,errors="ignore"),on=["year","quarter","month","week","date"],how="left")
 
     def create_simulation(self):
         sims = []
-        pricer_sim = self.pull_pricer_sim()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","price_prediction"]]
+        pricer_sim = self.pull_pricer_sim()[["date","ticker","price"]]
         if self.ranker_class != None:
-            ranker_sim = self.pull_ranker_sim()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","rank"]]
+            ranker_sim = self.pull_ranker_sim()[["date","ticker","rank"]]
             sims.append(ranker_sim)
         if self.classifier_class != None:
-            classifier_sim = self.pull_classifier_sim()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","classification_prediction"]]
-            classifier_sim.dropna(inplace=True)
-            classifier_sim["classification_prediction"] = [self.ameme(x) for x in classifier_sim["classification_prediction"]]
+            classifier_sim = self.pull_classifier_sim()[["date","ticker","classification"]]
+            classifier_sim["classification"] = [self.ameme(x) for x in classifier_sim["classification"]]
             sims.append(classifier_sim)
         for sim in sims:
             if sim.index.size > 0:
-                pricer_sim = pricer_sim.merge(sim,on=["year",self.pricer_class.time_horizon_class.naming_convention,"ticker"],how="left")
+                pricer_sim = pricer_sim.merge(sim,on=["date","ticker"],how="left")
         return pricer_sim
     
     def pull_pricer_sim(self):
@@ -85,27 +84,26 @@ class AStrategy(object):
         
     def create_current_simulation(self):
         sims = []
-        pricer_sim = self.pull_pricer_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","price_prediction"]]
+        pricer_sim = self.pull_pricers()[["date","ticker","price"]]
         if self.ranker_class != None:
-            ranker_sim = self.pull_ranker_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","rank"]]
+            ranker_sim = self.pull_rankers()[["date","ticker","rank"]]
             sims.append(ranker_sim)
         if self.classifier_class != None:
-            classifier_sim = self.pull_classifier_predictions()[["year",self.pricer_class.time_horizon_class.naming_convention,"ticker","classification_prediction"]]
-            classifier_sim.dropna(inplace=True)
-            classifier_sim["classification_prediction"] = [self.ameme(x) for x in classifier_sim["classification_prediction"]]
+            classifier_sim = self.pull_classifiers()[["date","ticker","classification"]]
+            classifier_sim["classification"] = [self.ameme(x) for x in classifier_sim["classification"]]
             sims.append(classifier_sim)
         for sim in sims:
             if sim.index.size > 0:
-                pricer_sim = pricer_sim.merge(sim,on=["year",self.pricer_class.time_horizon_class.naming_convention,"ticker"],how="left")
+                pricer_sim = pricer_sim.merge(sim,on=["date","ticker"],how="left")
         return pricer_sim
     
-    def pull_pricer_predictions(self):
+    def pull_pricers(self):
         self.pricer_class.db.connect()
         predictions = self.pricer_class.db.retrieve("predictions")
         self.pricer_class.db.disconnect()
         return predictions
     
-    def pull_classifier_predictions(self):
+    def pull_classifiers(self):
         if self.classifier_class == None:
             return pd.DataFrame([{}])
         else:
@@ -114,7 +112,7 @@ class AStrategy(object):
             self.classifier_class.db.disconnect()
             return predictions
         
-    def pull_ranker_predictions(self):
+    def pull_rankers(self):
         if self.ranker_class == None:
             return pd.DataFrame([{}])
         else:
@@ -132,9 +130,10 @@ class AStrategy(object):
         for ticker in tickers:
             try:
                 ticker_sim = self.pricer_class.market.retrieve_ticker_prices(self.pricer_class.asset_class.value,ticker)
-                ticker_sim = self.pricer_class.price_returns(ticker_sim,current)
-                completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim,self.benchmark)
-                new_prices.append(completed)
+                ticker_sim = self.returns.returns(self.pricer_class.time_horizon_class,ticker_sim,current)
+                new_prices.append(ticker_sim)
+                # completed = self.risk.risk(self.pricer_class.time_horizon_class,ticker_sim,self.benchmark)
+                # new_prices.append(completed)
             except Exception as e:
                 print(str(e))
                 continue
@@ -143,12 +142,12 @@ class AStrategy(object):
         return price_returns
     
     def merge_sim_returns(self,sim,returns):
-        merged = sim.merge(returns,on=["year",self.pricer_class.time_horizon_class.naming_convention,"ticker"],how="left")
+        merged = sim.merge(returns,on=["date","ticker"],how="left")
         merged = merged.merge(self.pricer_class.sp500[["ticker","GICS Sector"]],on="ticker",how="left")
         return merged
     
     def apply_yields(self,sim,rec):
-        final_data = self.returns.returns(self.market_return,self.pricer_class.time_horizon_class,sim,rec,self.yields)
+        final_data = self.returns.required_returns(self.market_return,self.pricer_class.time_horizon_class,sim,rec,self.yields)
         return final_data
     
     def initialize_backtester(self):

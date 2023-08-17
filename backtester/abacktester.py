@@ -4,15 +4,15 @@ import pandas as pd
         # self.current: dictates whether or not to output recommendations or backtests
         # self.start_date: start date of the backtest
         # self.end_date: end date of the backtest
-        # self.trade_algorithm: algorithm class
+        # self.strategy: algorithm class
         # self.table_name: name of the database to store the historical trades
 class ABacktester(object):
 
-    def __init__(self,trade_algorithm,current,start_date,end_date):
+    def __init__(self,strategy,current,start_date,end_date):
         self.current = current
         self.start_date = start_date
         self.end_date = end_date
-        self.trade_algorithm = trade_algorithm
+        self.strategy = strategy
         self.table_name = "trades" if self.current else "historical_trades"
     
     ## main backtest function
@@ -21,14 +21,14 @@ class ABacktester(object):
     ## rec: whether to output the recommendation or the backtest
     def backtest(self,sim,parameter,rec):
         final_data = sim.dropna()
-        sell_day = self.trade_algorithm.pricer_class.time_horizon_class.holding_period
+        sell_day = self.strategy.pricer_class.time_horizon_class.holding_period
         mod_val = int(sell_day / 5)
         buy_day = parameter["buy_day"]
-        if parameter["rank"] == True:
-            final_data = self.trade_algorithm.ranker_class.backtest_rank(final_data)
         if not rec:
-            naming = self.trade_algorithm.pricer_class.time_horizon_class.naming_convention
+            naming = self.strategy.pricer_class.time_horizon_class.naming_convention
             if naming != "date":
+                final_data["week"] = [x.week for x in final_data["date"]]
+                final_data["day"] = [x.weekday() for x in final_data["date"]]
                 final_data = final_data[final_data["week"] % mod_val == 0]
                 final_data = final_data[final_data["day"]==buy_day]
         trades = self.backtest_helper(final_data,parameter,self.start_date,self.end_date,rec)
@@ -37,68 +37,55 @@ class ABacktester(object):
     ## description: return modification for calculations
     ## sim: simulation
     ## naming: name of the time frame for calculation purposes
-    def backtest_return_helper(self,sim,naming):
+    def backtest_return_helper(self,sim):
         sim["returns"] = sim["return"] + 1
         return sim
     
-    ## description: heavy lifting function filtering and the simulation based on parameters
+    ## description: heavy lifting function filtering the simulation based on parameters
     ## sim: simulation data
     ## parameter: parameters dictating the filtering of trades
     ## start_date: start date of the backtest
     ## end_date: end date of the backtest
     ## current: whether to output recs or backtest trades
     def backtest_helper(self,sim,parameter,start_date,end_date,current):
+
         value = parameter["value"]
         ceiling = parameter["ceiling"]
         classification = parameter["classification"]
-        tyields = parameter["tyields"]
-        risk = parameter["risk"]
-        floor_value = parameter["floor_value"]
+        floor = parameter["floor"]
         rank = parameter["rank"]
-        naming = self.trade_algorithm.pricer_class.time_horizon_class.naming_convention
-        positions = self.trade_algorithm.positions
-        sim = sim[(sim["year"] >= start_date.year) & (sim["year"] <= end_date.year)]
+        positions = self.strategy.positions
+        sim = sim[(sim["date"] >= start_date) & (sim["date"] <= end_date)]
 
-        ## optimizing
         if not value:
-            sim[f"{naming}ly_delta_sign"] = sim[f"{naming}ly_delta_sign"] * -1
-            if "classification_prediction" in sim.columns:
-                sim["classification_prediction"] = [int(not x) for x in sim["classification_prediction"]]
+            sim[f"delta_sign"] = sim[f"delta_sign"] * -1
+            sim["classification"] = [int(not x) for x in sim["classification"]]
 
-        sim = sim[sim[f"{naming}ly_delta_sign"]==1]
+        sim = sim[sim[f"delta_sign"]==1]
         return_column = "returns"
-        columns = ["year",naming,"ticker",f"{naming}ly_delta",f"{naming}ly_delta_sign"]
+        columns = ["date","ticker",f"delta",f"delta_sign"]
+
         if not current:
-            sim = self.backtest_return_helper(sim,naming)
+            sim = self.backtest_return_helper(sim)
             sim["actual_returns"] = sim[return_column]
             columns.append("actual_returns")
+
+        sim = sim[sim[f"delta"]>=floor]
+        sim = sim[sim[f"delta"]<=ceiling]
         
-        ##weekly logic
-        test = sim.copy()
-        ## Filtering
-        if risk == "rrr":
-            test["risk_boolean"] = test[f"{naming}ly_beta"] <= test[f"{naming}ly_beta"].mean()
-            test["return_boolean"] = test[f"{naming}ly_delta"] > test[f"{naming}ly_rrr_{tyields}"]
-            test = test[(test["return_boolean"]==True)]
-            test = test[test["risk_boolean"] ==True]
-        elif risk == "flat":
-            test = test[(test[f"{naming}ly_delta"]>=0.05)]
-        else:
-            test = test.copy()
-        if rank and "rank" in test.columns:
-            test = test[test["rank"]>=self.strategy.ranker_class.lower_bound]    
+        if rank:
+            sim = sim[sim["rank"]>=self.strategy.ranker_class.lower_bound]
+            sim = sim.sort_values(["date","rank"]).groupby(["date","GICS Sector"]).first().reset_index()    
         
-        if classification and "classification_prediction" in test.columns:
-            test = test[test["classification_prediction"]==1.0]
-        if ceiling:
-            test = test[test[f"{naming}ly_delta"]<=floor_value]
+        if classification:
+            sim = sim[sim["classification"]==1.0]
 
         ledgers = []
         if current:
-            test = test[test["date"]==test["date"].max()]
-        ## ledger creation
+            sim = sim[sim["date"]==sim["date"].max()]
+        
         for i in range(positions):    
-            ledger = test.sort_values(["year",naming,f"{naming}ly_delta"])[columns].groupby(["year",naming],sort=False).nth(-i-1)
+            ledger = sim.sort_values(["date",f"delta"])[columns].groupby("date",sort=False).nth(-i-1)
             ledger["position"] = i
             ledgers.append(ledger)
         final = pd.concat(ledgers).reset_index()

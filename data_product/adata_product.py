@@ -1,7 +1,9 @@
 from time_horizons.time_horizons_factory import TimeHorizonFactory
 from database.market import Market
 from database.adatabase import ADatabase
-
+from processor.processor import Processor as p
+import numpy as np
+import pandas as pd
 # description: class for data products
 class ADataProduct(object):
     
@@ -60,8 +62,12 @@ class ADataProduct(object):
         for ticker in self.sp500["ticker"].unique():
             try:
                 prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
-                prices = p.column_date_processing(prices)
-                ticker_data = self.training_set_helper(ticker,prices,False)
+                ticker_data = p.column_date_processing(prices)
+                ticker_data.sort_values("date",inplace=True)
+                ticker_data["adjclose"] = [float(x) for x in ticker_data["adjclose"]]
+                ticker_data = self.training_set_helper(ticker_data,False)
+                ticker_data = ticker_data.replace([np.inf, -np.inf], np.nan).dropna()
+                ticker_data.dropna(inplace=True)
                 training_sets.append(ticker_data)
             except Exception as e:
                 print(str(e))
