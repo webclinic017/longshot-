@@ -3,7 +3,7 @@ from strategy.strategyfactory import StrategyFactory
 from pricer.pricer import Pricer
 from ranker.ranker import Ranker
 from classifier.classifier import Classifier
-
+from database.adatabase import ADatabase
 class Fund(object):
 
     def __init__(self,start,end,current_date):
@@ -11,6 +11,7 @@ class Fund(object):
         self.start = start
         self.end = end
         self.current_date = current_date
+        self.db = ADatabase("delta")
 
     def initialize(self):
         self.strategies = []
