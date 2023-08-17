@@ -1,4 +1,7 @@
+import warnings
 import pandas as pd
+from pandas.core.common import SettingWithCopyWarning
+warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
 # Description: class to backtest different trading algorithms
         # self.current: dictates whether or not to output recommendations or backtests

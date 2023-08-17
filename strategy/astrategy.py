@@ -158,7 +158,7 @@ class AStrategy(object):
         trades = []
         self.db.connect()
         self.db.create_index("trades","iteration")
-        for i in tqdm(range(len(self.parameters))):
+        for i in range(len(self.parameters)):
             try:
                 parameter = self.parameters[i]
                 parameter["iteration"] = i

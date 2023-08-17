@@ -2,4 +2,3 @@ from enum import Enum
 
 class Classifier(Enum):
     QUARTERLY_STOCK_ROLLING_CLASSIFIER = "QUARTERLY_STOCK_ROLLING_CLASSIFIER"
-    NONE = "NONE"
