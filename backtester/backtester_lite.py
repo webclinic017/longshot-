@@ -13,6 +13,7 @@ class BacktesterLite(object):
         weekend = parameter["weekend"]
         volatility = parameter["volatility"]
         local_min = parameter["local_min"]
+        
         iteration_sim["signal"] = (iteration_sim[f"{strategy}_{lookback}"] - iteration_sim["prev_close"]) / iteration_sim["prev_close"]
         iteration_sim = iteration_sim[iteration_sim[f"rolling_pct_stdev_{lookback}"]<=volatility]
         iteration_sim = iteration_sim[(iteration_sim["signal"]>=floor) & (iteration_sim["signal"]<=ceiling)]
