@@ -15,6 +15,10 @@ class Earnings(AFinancialStatementDataProduct):
         filing["quarter"] = [row[1]["quarter"]+1 if row[1]["quarter"] != 4 else 1 for row in filing.iterrows()]
         if "dividendscommonstockcash" not in filing.columns:
             filing["dividendscommonstockcash"] = 0
+        if "weightedaveragenumberofsharesoutstandingbasic" not in filing.columns:
+            filing["weightedaveragenumberofsharesoutstandingbasic"] = 0
+        if "earningspersharebasic" not in filing.columns:
+            filing["earningspersharebasic"] = 0
         filing["dividend"] = filing["dividendscommonstockcash"] / filing["weightedaveragenumberofsharesoutstandingbasic"]
         ticker_data = ticker_data.merge(filing[["year","quarter","earningspersharebasic"]],on=["year","quarter"],how="left").reset_index()
         ticker_data["rank"] = ticker_data["earningspersharebasic"] / ticker_data["adjclose"] 

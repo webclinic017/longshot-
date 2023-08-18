@@ -85,7 +85,7 @@ class AStrategy(object):
     def create_returns(self,current):
         new_prices = []
         sp500 = self.pricer_class.sp500.copy()
-        sp500 = sp500.rename(columns={"Symbol":"ticker"})
+        sp500 = sp500
         tickers = ["BTC"] if self.pricer_class.asset_class.value == "crypto" else sp500["ticker"].unique()
         self.pricer_class.market.connect()
         for ticker in tickers:

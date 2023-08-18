@@ -27,6 +27,10 @@ class ABacktester(object):
         sell_day = self.strategy.pricer_class.time_horizon_class.holding_period
         mod_val = int(sell_day / 5)
         buy_day = parameter["buy_day"]
+        sp100 = self.strategy.pricer_class.sp100
+        constituent = parameter["constituent"]
+        if constituent == 100:
+            final_data = final_data[final_data["ticker"].isin(list(sp100["ticker"].unique()))]
         if not rec:
             naming = self.strategy.pricer_class.time_horizon_class.naming_convention
             if naming != "date":

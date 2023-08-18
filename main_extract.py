@@ -6,35 +6,45 @@ from extractor.tiingo_extractor import TiingoExtractor
 from extractor.forex_extractor import FOREXExtractor
 from extractor.fred_extractor import FREDExtractor
 from processor.processor import Processor as p
+from alpaca_api.alpaca_api import AlpacaApi
+from time import sleep
 
-sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",attrs={"id":"constituents"})[0]
-sp100 = pd.read_html("https://en.wikipedia.org/wiki/S%26P_100",attrs={"id":"constituents"})[0]
+alp = AlpacaApi()
 market = Market()
+
+sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",attrs={"id":"constituents"})[0].rename(columns={"Symbol":"ticker"})
 
 market.connect()
 market.drop("sp500")
 market.store("sp500",sp500)
 market.disconnect()
 
+sp100 = pd.read_html("https://en.wikipedia.org/wiki/S%26P_100",attrs={"id":"constituents"})[0].rename(columns={"Symbol":"ticker","Sector":"GICS Sector"})
+
 market.connect()
 market.drop("sp100")
 market.store("sp100",sp100)
 market.disconnect()
 
-start = datetime(1995,7,10).strftime("%Y-%m-%d")
-end = datetime.now().strftime("%Y-%m-%d")
+start = (datetime.now() -timedelta(days=365.25*7)).strftime("%Y-%m-%d")
+end = (datetime.now() -timedelta(days=1)).strftime("%Y-%m-%d")
+
+market.connect()
+market.drop("stocks")
+market.create_index("stocks","ticker")
+for ticker in tqdm(list(sp500["Symbol"].unique())):
+    try:
+        data = alp.get_ticker_data(ticker,start,end)
+        data["ticker"] = ticker
+        market.store("stocks",data)
+        sleep(1)
+    except Exception as e:
+        print(ticker,print(str(e)))
+market.disconnect()
 
 # market.connect()
-# data = FOREXExtractor.extract(start,end)
-# values = pd.DataFrame(data["rates"].values.tolist())
-# dates = data["rates"].keys().tolist()
-# values["dates"]= dates
-# market.store("forex",values)
-# market.disconnect()
-
-# market.connect()
-# market.drop("stocks")
-# market.create_index("stocks","ticker")
+# market.drop("tiingo_stocks")
+# market.create_index("tiingo_stocks","ticker")
 # for ticker in tqdm(list(sp500["Symbol"].unique())):
 #     try:
 #         if "." in ticker:
@@ -42,7 +52,8 @@ end = datetime.now().strftime("%Y-%m-%d")
 #         try:
 #             data = TiingoExtractor.extract(ticker,start,end)
 #             data["ticker"] = ticker
-#             market.store("stocks",data)
+#             market.store("tiingo_stocks",data)
+#             sleep(1)
 #         except Exception as e:
 #             print(ticker,print(str(e)))
 #     except Exception as e:
@@ -59,6 +70,14 @@ end = datetime.now().strftime("%Y-%m-%d")
 #         print(ticker,"tiingo")
 # except Exception as e:
 #     print(ticker,str(e))
+# market.disconnect()
+
+# market.connect()
+# data = FOREXExtractor.extract(start,end)
+# values = pd.DataFrame(data["rates"].values.tolist())
+# dates = data["rates"].keys().tolist()
+# values["dates"]= dates
+# market.store("forex",values)
 # market.disconnect()
 
 # market.connect()

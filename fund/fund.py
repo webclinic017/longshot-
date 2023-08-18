@@ -4,13 +4,14 @@ from pricer.pricer import Pricer
 from ranker.ranker import Ranker
 from classifier.classifier import Classifier
 from database.adatabase import ADatabase
+from datetime import datetime, timedelta
 class Fund(object):
 
-    def __init__(self,start,end,current_date):
+    def __init__(self):
         self.name = "delta"
-        self.start = start
-        self.end = end
-        self.current_date = current_date
+        self.start = datetime.now() - timedelta(days=365.25*7)
+        self.end = datetime.now() - timedelta(days=1)
+        self.current_date = datetime.now()
         self.db = ADatabase("delta")
 
     def initialize(self):

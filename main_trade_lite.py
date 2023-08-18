@@ -5,7 +5,7 @@ from backtester.backtester_lite import BacktesterLite
 from time import sleep
 import pandas as pd
 
-live = False
+live = True
 
 alp = AlpacaApi()
 today = datetime.now()
@@ -15,10 +15,14 @@ start = (datetime.now()-timedelta(days=1) - timedelta(days=10)).strftime("%Y-%m-
 sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",attrs={"id":"constituents"})[0]
 sp500.rename(columns={"Symbol":"ticker"},inplace=True)
 
-parameter = pd.read_csv("parameter.csv").drop("Unnamed: 0",axis=1).to_dict("records")[0]
+sp500 = pd.read_html("https://en.wikipedia.org/wiki/S%26P_100",attrs={"id":"constituents"})[0]
+sp500.rename(columns={"Symbol":"ticker","Symbol":"GICS Sector"},inplace=True)
+
+parameter = pd.read_csv("/home/chungejy/longshot/parameter.csv").drop("Unnamed: 0",axis=1).to_dict("records")[0]
 iteration = 1
 positions = 11
 asset = "stocks"
+
 if today.weekday() < 5:
     try:
         tickers = sp500["ticker"] if asset == "stocks" else ["BTC/USD"]
@@ -27,11 +31,9 @@ if today.weekday() < 5:
         for ticker in tickers:
             try:
                 if asset == "stocks":
-                    example = alp.get_ticker_data(ticker,start,end)
-                    ticker_data = example.df.reset_index().rename(columns={"symbol":"ticker","timestamp":"date","close":"adjclose"})[["date","ticker","adjclose"]]
+                    ticker_data = alp.get_ticker_data(ticker,start,end)
                 else:
-                    example = alp.get_crypto_data(ticker,start,end)
-                    ticker_data = example.df.reset_index().rename(columns={"timestamp":"date","close":"adjclose"})[["date","adjclose"]]
+                    ticker_data = alp.get_crypto_data(ticker,start,end)
                     ticker_data["ticker"] = ticker
 
                 ticker_data = p.column_date_processing(ticker_data)

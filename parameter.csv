@@ -1,2 +1,2 @@
-,strategy,value,lookback,holding_period,floor,ceiling,volatility,local_min,industry_weighted,weekend
-0,window,True,5,1,-10,10,1,False,False,True
+,strategy,value,lookback,holding_period,floor,ceiling,volatility,local_min,industry_weighted,weekend,constituent
+0,window,True,5,1,0,1,0.5,False,True,True,500
