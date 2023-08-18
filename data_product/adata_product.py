@@ -12,6 +12,7 @@ class ADataProduct(object):
         self.asset_class = asset_class
         self.market = Market()
         self.pull_sp500()
+        self.pull_sp100()
     
     def initialize(self):
         self.name = f"{self.time_horizon_class.naming_convention}ly_{self.asset_class.value}_{self.naming_suffix}"
@@ -21,6 +22,12 @@ class ADataProduct(object):
         self.market.connect()
         self.sp500 = self.market.retrieve("sp500")
         self.sp500 = self.sp500.rename(columns={"Symbol":"ticker"})
+        self.market.disconnect()
+    
+    def pull_sp100(self):
+        self.market.connect()
+        self.sp100 = self.market.retrieve("sp100")
+        self.sp100 = self.sp100.rename(columns={"Symbol":"ticker","Sector":"GICS Sector"})
         self.market.disconnect()
         
     def pull_sim(self):
@@ -59,7 +66,7 @@ class ADataProduct(object):
     def training_set(self):
         self.market.connect()
         training_sets = []
-        for ticker in self.sp500["ticker"].unique():
+        for ticker in self.sp100["ticker"].unique():
             try:
                 prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
                 ticker_data = p.column_date_processing(prices)

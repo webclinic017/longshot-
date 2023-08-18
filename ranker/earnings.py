@@ -13,6 +13,9 @@ class Earnings(AFinancialStatementDataProduct):
         filing = filing.groupby(["year","quarter"]).mean().reset_index()
         filing["year"] = [row[1]["year"] if row[1]["quarter"] != 4 else row[1]["year"]+1 for row in filing.iterrows()]
         filing["quarter"] = [row[1]["quarter"]+1 if row[1]["quarter"] != 4 else 1 for row in filing.iterrows()]
+        if "dividendscommonstockcash" not in filing.columns:
+            filing["dividendscommonstockcash"] = 0
+        filing["dividend"] = filing["dividendscommonstockcash"] / filing["weightedaveragenumberofsharesoutstandingbasic"]
         ticker_data = ticker_data.merge(filing[["year","quarter","earningspersharebasic"]],on=["year","quarter"],how="left").reset_index()
-        ticker_data["rank"] = ticker_data["adjclose"] / ticker_data["earningspersharebasic"]
+        ticker_data["rank"] = ticker_data["earningspersharebasic"] / ticker_data["adjclose"] 
         return ticker_data

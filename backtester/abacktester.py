@@ -78,7 +78,7 @@ class ABacktester(object):
         
         if rank:
             sim = sim[sim["rank"]>=self.strategy.ranker_class.lower_bound]
-            sim = sim.sort_values(["date","rank"]).groupby(["date","GICS Sector"]).first().reset_index()    
+            sim = sim.sort_values(["date","rank"]).groupby(["date","GICS Sector"],sort=False).last().reset_index()    
         
         if classification:
             sim = sim[sim["classification"]==1.0]

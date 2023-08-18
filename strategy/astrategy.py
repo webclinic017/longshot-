@@ -81,46 +81,7 @@ class AStrategy(object):
             return int(x)
         except:
             return 0
-        
-    def create_current_simulation(self):
-        sims = []
-        pricer_sim = self.pull_pricers()[["date","ticker","price"]]
-        if self.ranker_class != None:
-            ranker_sim = self.pull_rankers()[["date","ticker","rank"]]
-            sims.append(ranker_sim)
-        if self.classifier_class != None:
-            classifier_sim = self.pull_classifiers()[["date","ticker","classification"]]
-            classifier_sim["classification"] = [self.ameme(x) for x in classifier_sim["classification"]]
-            sims.append(classifier_sim)
-        for sim in sims:
-            if sim.index.size > 0:
-                pricer_sim = pricer_sim.merge(sim,on=["date","ticker"],how="left")
-        return pricer_sim
     
-    def pull_pricers(self):
-        self.pricer_class.db.connect()
-        predictions = self.pricer_class.db.retrieve("predictions")
-        self.pricer_class.db.disconnect()
-        return predictions
-    
-    def pull_classifiers(self):
-        if self.classifier_class == None:
-            return pd.DataFrame([{}])
-        else:
-            self.classifier_class.db.connect()
-            predictions = self.classifier_class.db.retrieve("predictions")
-            self.classifier_class.db.disconnect()
-            return predictions
-        
-    def pull_rankers(self):
-        if self.ranker_class == None:
-            return pd.DataFrame([{}])
-        else:
-            self.ranker_class.db.connect()
-            predictions = self.ranker_class.db.retrieve("predictions")
-            self.ranker_class.db.disconnect()
-            return predictions
-
     def create_returns(self,current):
         new_prices = []
         sp500 = self.pricer_class.sp500.copy()
@@ -173,7 +134,7 @@ class AStrategy(object):
 
     def run_recommendation(self,simulation):
         trades = []
-        self.db.cloud_connect()
+        self.db.connect()
         try:
             parameter = self.parameter
             trade = self.backtester.backtest(simulation.copy(),parameter,True)
@@ -210,7 +171,7 @@ class AStrategy(object):
         return iterations      
      
     def pull_recommendations(self):
-        self.db.cloud_connect()
+        self.db.connect()
         recs = self.db.retrieve("recs")
         self.db.disconnect()
         return recs
@@ -238,7 +199,7 @@ class AStrategy(object):
         return recs
     
     def drop_recommendations(self):
-        self.db.cloud_connect()
+        self.db.connect()
         recs = self.db.drop("recs")
         self.db.disconnect()
         return recs   

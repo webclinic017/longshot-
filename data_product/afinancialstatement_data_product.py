@@ -9,19 +9,16 @@ import pandas as pd
 class AFinancialStatementDataProduct(ANonAIDataProduct):
     
     def __init__(self,asset_class,time_horizon):
-        self.time_horizon_class = TimeHorizonFactory.build(time_horizon)
-        self.asset_class = asset_class
-        self.market = Market()
+        super().__init__(asset_class,time_horizon)
         self.sec = SEC()
-        self.pull_sp500()
     
     def training_set(self):
         training_sets = []
         self.market.connect()
         self.sec.connect()
-        for ticker in self.sp500["ticker"].unique():
+        for ticker in self.sp100["ticker"].unique():
             try:
-                cik = self.sp500[self.sp500["ticker"]==ticker]["CIK"]
+                cik = self.sp100[self.sp100["ticker"]==ticker]["CIK"]
                 filings = self.sec.retrieve_filing_data(int(cik))
                 filings = p.column_date_processing(filings)
                 prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
