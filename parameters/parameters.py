@@ -36,10 +36,10 @@ class Parameters(object):
     
     @classmethod
     def parameters_lite(self,lookbacks,holding_periods,ceilings,floors,volatilities,local_mins):
-        values = [True,False]
+        values = [True]
         parameters = []
-        industry_weighteds = [True,False]
-        weekends = [True,False]
+        industry_weighteds = [True]
+        weekends = [True]
         strategies = ["rolling","window"]
         constituents = [100,500]
         for strategy in strategies:

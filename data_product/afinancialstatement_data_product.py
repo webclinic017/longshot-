@@ -1,5 +1,3 @@
-from time_horizons.time_horizons_factory import TimeHorizonFactory
-from database.market import Market
 from database.sec import SEC
 from data_product.anonai_data_product import ANonAIDataProduct
 from processor.processor import Processor as p
@@ -20,12 +18,24 @@ class AFinancialStatementDataProduct(ANonAIDataProduct):
             try:
                 cik = self.sp500[self.sp500["ticker"]==ticker]["CIK"]
                 filings = self.sec.retrieve_filing_data(int(cik))
+                filings["date"] = pd.to_datetime(filings["filed"],format="%Y%m%d")
                 filings = p.column_date_processing(filings)
                 prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
                 ticker_data = p.column_date_processing(prices)
                 ticker_data.sort_values("date",inplace=True)
                 ticker_data["adjclose"] = [float(x) for x in ticker_data["adjclose"]]
-                ticker_data = self.training_set_helper(ticker_data,filings,False)
+                filing = filings.groupby(["year","quarter"]).mean().reset_index()
+                filing["year"] = [row[1]["year"] if row[1]["quarter"] != 4 else row[1]["year"]+1 for row in filing.iterrows()]
+                filing["quarter"] = [row[1]["quarter"]+1 if row[1]["quarter"] != 4 else 1 for row in filing.iterrows()]
+                if "dividendscommonstockcash" not in filing.columns:
+                    filing["dividendscommonstockcash"] = 0
+                if "weightedaveragenumberofsharesoutstandingbasic" not in filing.columns:
+                    filing["weightedaveragenumberofsharesoutstandingbasic"] = 0
+                if "earningspersharebasic" not in filing.columns:
+                    filing["earningspersharebasic"] = 0
+                filing["dividend"] = filing["dividendscommonstockcash"] / filing["weightedaveragenumberofsharesoutstandingbasic"]
+                ticker_data = ticker_data.merge(filing[["year","quarter","dividend","earningspersharebasic"]],on=["year","quarter"],how="left").reset_index()
+                ticker_data = self.training_set_helper(ticker_data,False)
                 ticker_data = ticker_data.replace([np.inf, -np.inf], np.nan).dropna()
                 ticker_data.dropna(inplace=True)
                 training_sets.append(ticker_data)
@@ -35,5 +45,5 @@ class AFinancialStatementDataProduct(ANonAIDataProduct):
         self.market.disconnect()
         self.sec.disconnect()
         data = pd.concat(training_sets)
-        training_data = data.dropna().copy().sort_values(["year",self.time_horizon_class.naming_convention])
-        self.training_data = training_data
+        self.training_data = data
+        # .dropna().copy().sort_values("date")

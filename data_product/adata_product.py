@@ -79,5 +79,5 @@ class ADataProduct(object):
                 continue
         self.market.disconnect()
         data = pd.concat(training_sets)
-        training_data = data.dropna().copy().sort_values(["year",self.time_horizon_class.naming_convention])
+        training_data = data.dropna().copy().sort_values("date")
         self.training_data = training_data

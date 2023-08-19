@@ -23,6 +23,10 @@ iteration = 1
 positions = 11
 asset = "stocks"
 
+account = alp.live_get_account()
+closed_orders = alp.live_close_all()
+sleep(300)
+
 if today.weekday() < 5:
     try:
         tickers = sp500["ticker"] if asset == "stocks" else ["BTC/USD"]

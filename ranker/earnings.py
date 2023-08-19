@@ -9,17 +9,6 @@ class Earnings(AFinancialStatementDataProduct):
         self.naming_suffix = "earnings_rank"
         self.lower_bound = 0
         
-    def training_set_helper(self,ticker_data,filing,current):
-        filing = filing.groupby(["year","quarter"]).mean().reset_index()
-        filing["year"] = [row[1]["year"] if row[1]["quarter"] != 4 else row[1]["year"]+1 for row in filing.iterrows()]
-        filing["quarter"] = [row[1]["quarter"]+1 if row[1]["quarter"] != 4 else 1 for row in filing.iterrows()]
-        if "dividendscommonstockcash" not in filing.columns:
-            filing["dividendscommonstockcash"] = 0
-        if "weightedaveragenumberofsharesoutstandingbasic" not in filing.columns:
-            filing["weightedaveragenumberofsharesoutstandingbasic"] = 0
-        if "earningspersharebasic" not in filing.columns:
-            filing["earningspersharebasic"] = 0
-        filing["dividend"] = filing["dividendscommonstockcash"] / filing["weightedaveragenumberofsharesoutstandingbasic"]
-        ticker_data = ticker_data.merge(filing[["year","quarter","earningspersharebasic"]],on=["year","quarter"],how="left").reset_index()
+    def training_set_helper(self,ticker_data,current):
         ticker_data["rank"] = ticker_data["earningspersharebasic"] / ticker_data["adjclose"] 
         return ticker_data

@@ -32,7 +32,7 @@ end = (datetime.now() -timedelta(days=1)).strftime("%Y-%m-%d")
 market.connect()
 market.drop("stocks")
 market.create_index("stocks","ticker")
-for ticker in tqdm(list(sp500["Symbol"].unique())):
+for ticker in tqdm(list(sp500["ticker"].unique())):
     try:
         data = alp.get_ticker_data(ticker,start,end)
         data["ticker"] = ticker
@@ -45,7 +45,7 @@ market.disconnect()
 # market.connect()
 # market.drop("tiingo_stocks")
 # market.create_index("tiingo_stocks","ticker")
-# for ticker in tqdm(list(sp500["Symbol"].unique())):
+# for ticker in tqdm(list(sp500["ticker"].unique())):
 #     try:
 #         if "." in ticker:
 #             ticker = ticker.replace(".","-")
