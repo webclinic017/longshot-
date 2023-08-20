@@ -20,7 +20,7 @@ sp500.rename(columns={"Symbol":"ticker","Symbol":"GICS Sector"},inplace=True)
 
 parameter = pd.read_csv("/home/chungejy/longshot/parameter.csv").drop("Unnamed: 0",axis=1).to_dict("records")[0]
 iteration = 1
-positions = 11
+positions = len(list(sp500["GICS Sector"].unique()))
 asset = "stocks"
 
 account = alp.live_get_account()
@@ -58,7 +58,7 @@ if today.weekday() < 5:
         final = pd.concat(simulation).merge(sp500[["ticker","GICS Sector"]],how="left")
         final = final[final["date"]==final["date"].max()]
 
-        trades = BacktesterLite.backtest(positions,final.copy(),iteration,parameter,True)
+        trades = BacktesterLite.backtest(final.copy(),iteration,parameter,True)
 
         if live:
             account = alp.live_get_account()

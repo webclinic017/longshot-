@@ -4,11 +4,11 @@ from pandas.core.common import SettingWithCopyWarning
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
 # Description: class to backtest different trading algorithms
-        # self.current: dictates whether or not to output recommendations or backtests
-        # self.start_date: start date of the backtest
-        # self.end_date: end date of the backtest
-        # self.strategy: algorithm class
-        # self.table_name: name of the database to store the historical trades
+# self.current: dictates whether or not to output recommendations or backtests
+# self.start_date: start date of the backtest
+# self.end_date: end date of the backtest
+# self.strategy: algorithm class
+# self.table_name: name of the database to store the historical trades
 class ABacktester(object):
 
     def __init__(self,strategy,current,start_date,end_date):

@@ -2,7 +2,7 @@
 class BacktesterLite(object):
     
     @classmethod
-    def backtest(self,positions,sp100,final,iteration,parameter,current):
+    def backtest(self,sp100,final,iteration,parameter,current):
         iteration_sim = final.copy()
         industry_weighted = parameter["industry_weighted"]
         strategy = parameter["strategy"]
@@ -14,8 +14,11 @@ class BacktesterLite(object):
         volatility = parameter["volatility"]
         local_min = parameter["local_min"]
         constituent = parameter["constituent"]
+
         if constituent == 100:
             iteration_sim = iteration_sim[iteration_sim["ticker"].isin(list(sp100["ticker"].unique()))]
+        positions = len(list(iteration_sim["GICS Sector"].unique()))
+        
         iteration_sim["signal"] = (iteration_sim[f"{strategy}_{lookback}"] - iteration_sim["prev_close"]) / iteration_sim["prev_close"]
         iteration_sim = iteration_sim[iteration_sim[f"rolling_pct_stdev_{lookback}"]<=volatility]
         iteration_sim = iteration_sim[(iteration_sim["signal"]>=floor) & (iteration_sim["signal"]<=ceiling)]
@@ -37,6 +40,7 @@ class BacktesterLite(object):
                 iteration_sim = iteration_sim[iteration_sim["day"]==1]
         if weekend:
             iteration_sim = iteration_sim[iteration_sim["day"]<4]
+
         if industry_weighted:
             iteration_sim = iteration_sim.sort_values(["date","signal"],ascending=False).groupby(["date","GICS Sector"]).first().reset_index()   
 

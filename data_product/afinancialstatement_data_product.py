@@ -46,4 +46,3 @@ class AFinancialStatementDataProduct(ANonAIDataProduct):
         self.sec.disconnect()
         data = pd.concat(training_sets)
         self.training_data = data
-        # .dropna().copy().sort_values("date")
