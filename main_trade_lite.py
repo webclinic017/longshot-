@@ -23,10 +23,6 @@ iteration = 1
 positions = len(list(sp500["GICS Sector"].unique()))
 asset = "stocks"
 
-account = alp.live_get_account()
-closed_orders = alp.live_close_all()
-sleep(300)
-
 if today.weekday() < 5:
     try:
         tickers = sp500["ticker"] if asset == "stocks" else ["BTC/USD"]
@@ -62,7 +58,7 @@ if today.weekday() < 5:
 
         if live:
             account = alp.live_get_account()
-            cash = float(account.cash) * 0.995
+            cash = float(account.cash) * 0.999
             closed_orders = alp.live_close_all()
             sleep(300)
             if trades.index.size > 0:
@@ -71,18 +67,10 @@ if today.weekday() < 5:
                         ticker = row[1]["ticker"]
                         amount = round(cash / positions,2)
                         alp.live_market_order(ticker,amount)
-                        # print(ticker,amount)
                     except Exception as e:
                         print(str(e))
                         continue
-        else:
-            if trades.index.size > 0:
-                for row in trades.iterrows():
-                    try:
-                        print(row[1])
-                    except Exception as e:
-                        print(str(e))
-
+                    
     except Exception as e:
         print(str(e))
 else:
