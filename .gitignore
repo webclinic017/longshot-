@@ -19,3 +19,4 @@ sec_docs/
 csv_files/
 sec/
 reports/
+*.csv

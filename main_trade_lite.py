@@ -3,6 +3,7 @@ from alpaca_api.alpaca_api import AlpacaApi
 from time import sleep
 
 alp = AlpacaApi()
+
 try:
     print("closing")
     alp.live_close_all()
