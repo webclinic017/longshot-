@@ -9,12 +9,10 @@ class Backtester(object):
 
         strategy = parameter["strategy"]
         lookback = parameter["lookback"]
-        volatility = parameter["volatility"]
         value = parameter["value"]
         positions = len(list(iteration_sim["GICS Sector"].unique()))
         
         iteration_sim["signal"] = (iteration_sim[f"{strategy}_{lookback}"] - iteration_sim["prev_close"]) / iteration_sim["prev_close"]
-        iteration_sim = iteration_sim[iteration_sim[f"rolling_pct_stdev_{lookback}"]<=volatility]
         iteration_sim = iteration_sim[iteration_sim["day"]<4]
         
         if not value:

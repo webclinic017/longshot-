@@ -15,9 +15,9 @@ class Transformer(object):
         for lookback in lookbacks:
             ticker_data[f"window_{lookback}"] = ticker_data[price_col].shift(lookback)
             ticker_data[f"rolling_{lookback}"] = ticker_data[price_col].rolling(lookback).mean()
-            ticker_data["d1"] = ticker_data[f"adjclose"].pct_change()
-            ticker_data[f"rolling_stdev_{lookback}"] = ticker_data[price_col].rolling(lookback).std()
-            ticker_data[f"rolling_pct_stdev_{lookback}"] = ticker_data[f"rolling_stdev_{lookback}"] / ticker_data[f"rolling_{lookback}"]
+            # ticker_data["d1"] = ticker_data[f"adjclose"].pct_change()
+            # ticker_data[f"rolling_stdev_{lookback}"] = ticker_data[price_col].rolling(lookback).std()
+            # ticker_data[f"rolling_pct_stdev_{lookback}"] = ticker_data[f"rolling_stdev_{lookback}"] / ticker_data[f"rolling_{lookback}"]
         if not current:
             ticker_data[f"return"] = (ticker_data["adjclose"].shift(-1) - ticker_data["adjclose"]) / ticker_data["adjclose"]
         return ticker_data
