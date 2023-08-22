@@ -21,6 +21,7 @@ class Backtester(object):
             iteration_sim["signal"] = iteration_sim["signal"] * -1
 
         iteration_sim = iteration_sim.sort_values(["date","signal"],ascending=False).groupby(["date","GICS Sector"]).first().reset_index()   
+        iteration_sim = iteration_sim[(iteration_sim["signal"]>-1) & (iteration_sim["signal"]<1)]
         
         additional_columns = ["signal"]
         

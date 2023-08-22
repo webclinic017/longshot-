@@ -1,4 +1,7 @@
 from processor.processor import Processor as p
+import warnings
+from pandas.core.common import SettingWithCopyWarning
+warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
 class Transformer(object):
 
@@ -6,7 +9,6 @@ class Transformer(object):
     def transform(self,ticker_data,lookbacks,current):
         ticker_data = p.column_date_processing(ticker_data)[["date","ticker","adjclose"]]
         ticker_data.sort_values("date",inplace=True)
-        ticker_data["week"] = [x.week for x in ticker_data["date"]]
         ticker_data["day"] = [x.weekday() for x in ticker_data["date"]]
         ticker_data["prev_close"] = ticker_data["adjclose"].shift(1)
         price_col = "adjclose" if current else "prev_close"
