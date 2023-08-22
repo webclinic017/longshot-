@@ -17,17 +17,13 @@ class Fund(object):
     def initialize(self):
         self.strategies = []
         self.ranker_classes = []
+        self.ranker_classes.append(Ranker.QUARTERLY_STOCK_ROLLING_RANKER)
         self.ranker_classes.append(Ranker.QUARTERLY_STOCK_EARNINGS_RANKER)
         self.ranker_classes.append(Ranker.QUARTERLY_STOCK_DIVIDENDS_RANKER)
-        self.ranker_classes.append(Ranker.QUARTERLY_STOCK_ROLLING_RANKER)
         self.classifier_classes = []
         self.classifier_classes.append(Classifier.QUARTERLY_STOCK_ROLLING_CLASSIFIER)
         self.pricer_classes = [] 
-        self.pricer_classes.append(Pricer.DAILY_STOCK_ROLLING)
-        self.pricer_classes.append(Pricer.WEEKLY_STOCK_ROLLING)
         self.pricer_classes.append(Pricer.QUARTERLY_STOCK_ROLLING)
-        self.pricer_classes.append(Pricer.DAILY_STOCK_WINDOW)
-        self.pricer_classes.append(Pricer.WEEKLY_STOCK_WINDOW)
         self.pricer_classes.append(Pricer.QUARTERLY_STOCK_WINDOW)
 
         for pricer_class in self.pricer_classes:

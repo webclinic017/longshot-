@@ -5,13 +5,12 @@ class Parameters(object):
     @classmethod
     def parameters(self):
         values = [True,False]
-        ceilings = [True,False]
         classifications = [True,False]
         ranks = [True,False]
         buy_days = [1]
-        floors = [-10,0]
-        ceilings = [1,10]
-        constituents = [100,500]
+        floors = [0]
+        ceilings = [1]
+        constituents = [100]
         parameters = []
         for constituent in constituents:
             for value in values:

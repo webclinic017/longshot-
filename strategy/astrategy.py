@@ -24,7 +24,7 @@ class AStrategy(object):
         self.classifier_class = classifier_fact.build(classifier)
         self.analysis = Analysis(self.pricer_class.time_horizon_class.name)
         self.market_return = 1.15
-        self.positions = 11
+        self.positions = 10
 
     def initialize_classes(self):
         self.pricer_class.initialize()
@@ -84,9 +84,8 @@ class AStrategy(object):
     
     def create_returns(self,current):
         new_prices = []
-        sp500 = self.pricer_class.sp500.copy()
-        sp500 = sp500
-        tickers = ["BTC"] if self.pricer_class.asset_class.value == "crypto" else sp500["ticker"].unique()
+        sp100 = self.pricer_class.sp100.copy()
+        tickers = ["BTC"] if self.pricer_class.asset_class.value == "crypto" else sp100["ticker"].unique()
         self.pricer_class.market.connect()
         for ticker in tickers:
             try:
@@ -104,7 +103,7 @@ class AStrategy(object):
     
     def merge_sim_returns(self,sim,returns):
         merged = sim.merge(returns,on=["date","ticker"],how="left")
-        merged = merged.merge(self.pricer_class.sp500[["ticker","GICS Sector"]],on="ticker",how="left")
+        merged = merged.merge(self.pricer_class.sp100[["ticker","GICS Sector"]],on="ticker",how="left")
         return merged
     
     def apply_yields(self,sim,rec):

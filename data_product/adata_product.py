@@ -11,17 +11,17 @@ class ADataProduct(object):
         self.time_horizon_class = TimeHorizonFactory.build(time_horizon)
         self.asset_class = asset_class
         self.market = Market()
-        self.pull_sp500()
+        # self.pull_sp100()
         self.pull_sp100()
     
     def initialize(self):
         self.name = f"{self.time_horizon_class.naming_convention}ly_{self.asset_class.value}_{self.naming_suffix}"
         self.db = ADatabase(self.name)
     
-    def pull_sp500(self):
-        self.market.connect()
-        self.sp500 = self.market.retrieve("sp500")
-        self.market.disconnect()
+    # def pull_sp100(self):
+    #     self.market.connect()
+    #     self.sp100 = self.market.retrieve("sp100")
+    #     self.market.disconnect()
     
     def pull_sp100(self):
         self.market.connect()
@@ -64,7 +64,7 @@ class ADataProduct(object):
     def training_set(self):
         self.market.connect()
         training_sets = []
-        for ticker in self.sp500["ticker"].unique():
+        for ticker in self.sp100["ticker"].unique():
             try:
                 prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
                 ticker_data = p.column_date_processing(prices)

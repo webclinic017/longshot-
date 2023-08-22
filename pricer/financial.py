@@ -53,7 +53,7 @@
 #         try:
 #             self.market.connect()
 #             self.sec.connect()
-#             cik = int(self.sp500[self.sp500["ticker"]==ticker]["CIK"])
+#             cik = int(self.sp100[self.sp100["ticker"]==ticker]["CIK"])
 #             prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
 #             prices = p.column_date_processing(prices)
 #             filing = self.sec.retrieve_filing_data(cik)
@@ -84,7 +84,7 @@
 #         try:
 #             self.market.connect()
 #             self.sec.connect()
-#             cik = int(self.sp500[self.sp500["ticker"]==ticker]["CIK"])
+#             cik = int(self.sp100[self.sp100["ticker"]==ticker]["CIK"])
 #             prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
 #             prices = p.column_date_processing(prices)
 #             filing = self.sec.retrieve_filing_data(cik)

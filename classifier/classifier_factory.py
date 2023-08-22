@@ -8,6 +8,8 @@ class ClassifierFactory(object):
     @classmethod
     def build(self,classifier):
         match classifier:
+            case classifier_list.WEEKLY_STOCK_ROLLING_CLASSIFIER:
+                result =  Rolling(AssetClasses.STOCKS,TimeHorizons.WEEKLY)
             case classifier_list.QUARTERLY_STOCK_ROLLING_CLASSIFIER:
                 result =  Rolling(AssetClasses.STOCKS,TimeHorizons.QUARTERLY)
             case _:

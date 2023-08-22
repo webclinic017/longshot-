@@ -15,6 +15,8 @@ class RankerFactory(object):
                 result = Dividends()
             case ranker_list.QUARTERLY_STOCK_ROLLING_RANKER:
                 result = Rolling(asset_class=AssetClasses.STOCKS,time_horizon=TimeHorizons.QUARTERLY)
+            case ranker_list.WEEKLY_STOCK_ROLLING_RANKER:
+                result = Rolling(asset_class=AssetClasses.STOCKS,time_horizon=TimeHorizons.WEEKLY)
             case _:
                 result = None
         return result
