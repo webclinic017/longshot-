@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from processor.processor import Processor as p
 from alpaca_api.alpaca_api import AlpacaApi
-from backtester.backtester_lite import BacktesterLite
+from lite.backtester_lite import BacktesterLite
 from time import sleep
 import pandas as pd
 
@@ -11,9 +11,6 @@ alp = AlpacaApi()
 today = datetime.now()
 end = (datetime.now()-timedelta(days=1)).strftime("%Y-%m-%d")
 start = (datetime.now()-timedelta(days=1) - timedelta(days=10)).strftime("%Y-%m-%d")
-
-sp100 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",attrs={"id":"constituents"})[0]
-sp100.rename(columns={"Symbol":"ticker"},inplace=True)
 
 sp100 = pd.read_html("https://en.wikipedia.org/wiki/S%26P_100",attrs={"id":"constituents"})[0]
 sp100.rename(columns={"Symbol":"ticker","Symbol":"GICS Sector"},inplace=True)
