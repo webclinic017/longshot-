@@ -5,15 +5,12 @@ from lite.transformer_lite import Transformer
 from alpaca_api.alpaca_api import AlpacaApi
 from tqdm import tqdm
 
-live = True
-
 alp = AlpacaApi()
 parameter = pd.read_csv("./parameter.csv").to_dict("records")[0]
 sp100 = pd.read_html("https://en.wikipedia.org/wiki/S%26P_100",attrs={"id":"constituents"})[0]
 sp100.rename(columns={"Symbol":"ticker","Sector":"GICS Sector"},inplace=True)
 
 lookback = parameter["lookback"]
-backtest_years = 1
 current = True
 
 end_date = datetime.now() - timedelta(days=1)

@@ -19,7 +19,7 @@ for row in trades.iterrows():
     try:
         ticker = row[1]["ticker"]
         amount = float(cash/positions)
-        # alp.live_market_order(ticker,amount)
+        alp.live_market_order(ticker,amount)
         print(ticker,amount)
     except Exception as e:
         print(ticker,amount,str(e))
