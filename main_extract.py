@@ -8,6 +8,8 @@ alp = AlpacaApi()
 market = Market()
 
 sp100 = pd.read_html("https://en.wikipedia.org/wiki/S%26P_100",attrs={"id":"constituents"})[0].rename(columns={"Symbol":"ticker","Sector":"GICS Sector"})
+sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",attrs={"id":"constituents"})[0].rename(columns={"Symbol":"ticker"})
+sp100 = sp100.merge(sp500[["ticker","CIK"]],on="ticker",how="left")
 
 market.connect()
 market.drop("sp100")
