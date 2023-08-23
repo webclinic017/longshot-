@@ -12,5 +12,5 @@ class Rolling(ANonAIDataProduct):
         self.lower_bound = 0
         
     def training_set_helper(self,ticker_data,current):
-        ticker_data[f"rank"] = (ticker_data["adjclose"].rolling(self.time_horizon_class.window).mean() - ticker_data["adjclose"]) / ticker_data["adjclose"]
+        ticker_data[f"rank"] = (ticker_data["adjopen"].rolling(self.time_horizon_class.window).mean() - ticker_data["adjopen"]) / ticker_data["adjopen"]
         return ticker_data

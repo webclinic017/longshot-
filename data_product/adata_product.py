@@ -69,7 +69,7 @@ class ADataProduct(object):
                 prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
                 ticker_data = p.column_date_processing(prices)
                 ticker_data.sort_values("date",inplace=True)
-                ticker_data["adjclose"] = [float(x) for x in ticker_data["adjclose"]]
+                ticker_data["adjopen"] = [float(x) for x in ticker_data["adjopen"]]
                 ticker_data = self.training_set_helper(ticker_data,False)
                 ticker_data = ticker_data.replace([np.inf, -np.inf], np.nan).dropna()
                 ticker_data.dropna(inplace=True)

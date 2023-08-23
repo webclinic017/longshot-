@@ -18,8 +18,8 @@ class Analysis(object):
         cumulative = portfolio[[i for i in counted_columns]].cumprod()
         cumulative["pv"] = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in cumulative.iterrows()]
         cumulative["date"] = portfolio["date"]
-        # cumulative = cumulative.merge(bench_returns[["date","adjclose","bench_dately_return",f"{self.naming}ly_variance"]],on="date",how="left")
-        # cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
+        # cumulative = cumulative.merge(bench_returns[["date","adjopen","bench_dately_return",f"{self.naming}ly_variance"]],on="date",how="left")
+        # cumulative["bench"] = [1 + (row[1]["adjopen"] - cumulative["adjopen"].iloc[0]) / cumulative["adjopen"].iloc[0] for row in cumulative.iterrows()]
         cumulative["return"] = cumulative["pv"].pct_change().fillna(1)
         # cumulative["beta"] = cumulative[["return","bench_dately_return"]].cov().iloc[0][1]/cumulative[f"{self.naming}ly_variance"].iloc[-1]
         # cumulative["rrr"] = tyields[f"{self.naming}ly_yield10"].mean() + cumulative["beta"].mean()*(cumulative["bench"].mean()-tyields[f"{self.naming}ly_yield10"].mean())
@@ -35,7 +35,7 @@ class Analysis(object):
         cumulative["pv"] = [sum([row[1][column] * 1/positions for column in counted_columns]) for row in cumulative.iterrows()]
         # cumulative["daily_returns"] = daily_returns
         # bench = bench.fillna(method="bfill")
-        # cumulative = cumulative.merge(bench[["date","adjclose"]],on="date",how="left")
-        # cumulative["bench"] = [1 + (row[1]["adjclose"] - cumulative["adjclose"].iloc[0]) / cumulative["adjclose"].iloc[0] for row in cumulative.iterrows()]
+        # cumulative = cumulative.merge(bench[["date","adjopen"]],on="date",how="left")
+        # cumulative["bench"] = [1 + (row[1]["adjopen"] - cumulative["adjopen"].iloc[0]) / cumulative["adjopen"].iloc[0] for row in cumulative.iterrows()]
         cumulative = cumulative.fillna(method="bfill")
         return cumulative

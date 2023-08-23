@@ -7,5 +7,5 @@ class Rolling(ANonAIDataProduct):
         self.naming_suffix = "rolling_classification"
 
     def training_set_helper(self,ticker_data,current):
-        ticker_data[f"classification"] = (ticker_data["adjclose"].shift(self.time_horizon_class.window) - ticker_data["adjclose"]) > 0
+        ticker_data[f"classification"] = (ticker_data["adjopen"].shift(self.time_horizon_class.window) - ticker_data["adjopen"]) > 0
         return ticker_data

@@ -23,7 +23,7 @@ class AFinancialStatementDataProduct(ANonAIDataProduct):
                 prices = self.market.retrieve_ticker_prices(self.asset_class.value,ticker)
                 ticker_data = p.column_date_processing(prices)
                 ticker_data.sort_values("date",inplace=True)
-                ticker_data["adjclose"] = [float(x) for x in ticker_data["adjclose"]]
+                ticker_data["adjopen"] = [float(x) for x in ticker_data["adjopen"]]
                 filing = filings.groupby(["year","quarter"]).mean().reset_index()
                 filing["year"] = [row[1]["year"] if row[1]["quarter"] != 4 else row[1]["year"]+1 for row in filing.iterrows()]
                 filing["quarter"] = [row[1]["quarter"]+1 if row[1]["quarter"] != 4 else 1 for row in filing.iterrows()]

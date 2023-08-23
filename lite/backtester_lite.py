@@ -12,7 +12,7 @@ class Backtester(object):
         value = parameter["value"]
         positions = len(list(iteration_sim["GICS Sector"].unique()))
         
-        iteration_sim["signal"] = (iteration_sim[f"{strategy}_{lookback}"] - iteration_sim["prev_close"]) / iteration_sim["prev_close"]
+        iteration_sim["signal"] = (iteration_sim[f"{strategy}_{lookback}"] - iteration_sim["prev_open"]) / iteration_sim["prev_open"]
         
         iteration_sim = iteration_sim[iteration_sim["day"]<4]
         

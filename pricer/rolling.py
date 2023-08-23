@@ -9,5 +9,5 @@ class Rolling(ANonAIDataProduct):
         self.naming_suffix = "rolling_price"
 
     def training_set_helper(self,ticker_data,current):
-        ticker_data[f"price"] = ticker_data["adjclose"].rolling(self.time_horizon_class.window).mean()
+        ticker_data[f"price"] = ticker_data["adjopen"].rolling(self.time_horizon_class.window).mean()
         return ticker_data

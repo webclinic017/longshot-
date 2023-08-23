@@ -38,7 +38,7 @@ class TiingoExtractor(object):
             }
             url = f"https://api.tiingo.com/tiingo/crypto/prices?tickers={crypto}usd,fldcbtc&startDate{start}&endDate={end}&resampleFreq=1Day"
             requestResponse = requests.get(url,headers=headers,params=params)
-            return pd.DataFrame(requestResponse.json()[0]["priceData"]).rename(columns={"close":"adjclose"})
+            return pd.DataFrame(requestResponse.json()[0]["priceData"]).rename(columns={"close":"adjopen"})
         except Exception as e:
             print(str(e))
 

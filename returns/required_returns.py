@@ -9,7 +9,7 @@ class RequiredReturn(AReturns):
     def required_returns(self,market_return,atime_horizon,simulation,current,yields):
         # n = atime_horizon.instances_per_year
         # simulation = simulation.merge(yields.drop(["year","quarter","month","week"],axis=1),on="date",how="left").dropna()
-        week_col = "adjclose" if current else "prev_close"
+        week_col = "adjopen" if current else "prev_open"
         start_col = week_col
         # simulation["market_return"] = math.exp(np.log(market_return)/n)
         simulation["projected_return"] = (simulation[f"price"] - simulation[start_col]) / simulation[start_col]

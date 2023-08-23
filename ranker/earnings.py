@@ -10,5 +10,5 @@ class Earnings(AFinancialStatementDataProduct):
         self.lower_bound = 0
         
     def training_set_helper(self,ticker_data,current):
-        ticker_data["rank"] = ticker_data["earningspersharebasic"] / ticker_data["adjclose"] 
+        ticker_data["rank"] = ticker_data["earningspersharebasic"] / ticker_data["adjopen"] 
         return ticker_data

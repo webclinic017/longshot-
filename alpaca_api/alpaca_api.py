@@ -25,11 +25,11 @@ class AlpacaApi(object):
 
     def get_ticker_data(self,symbol,start,end):
         sbrequest = StockBarsRequest(symbol_or_symbols=symbol,start=start,end=end,timeframe=TimeFrame.Day,adjustment=Adjustment.ALL)
-        return self.data_client.get_stock_bars(sbrequest).df.reset_index().rename(columns={"symbol":"ticker","timestamp":"date","close":"adjclose"})[["date","ticker","adjclose"]]
+        return self.data_client.get_stock_bars(sbrequest).df.reset_index().rename(columns={"symbol":"ticker","timestamp":"date","open":"adjopen"})[["date","ticker","adjopen"]]
 
     def get_crypto_data(self,symbol,start,end):
         sbrequest = CryptoBarsRequest(symbol_or_symbols=symbol,start=start,end=end,timeframe=TimeFrame.Day,adjustment=Adjustment.ALL)
-        return self.crypto_data_client.get_crypto_bars(sbrequest).df.reset_index().rename(columns={"symbol":"ticker","timestamp":"date","close":"adjclose"})[["date","ticker","adjclose"]]
+        return self.crypto_data_client.get_crypto_bars(sbrequest).df.reset_index().rename(columns={"symbol":"ticker","timestamp":"date","open":"adjopen"})[["date","ticker","adjopen"]]
     
     ## retrieve the paper account
     def paper_get_account(self):

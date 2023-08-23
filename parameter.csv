@@ -1,2 +1,2 @@
 ,strategy,value,lookback
-0,window,False,20
+0,rolling,False,60

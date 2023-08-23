@@ -9,7 +9,7 @@ class TimeHorizonFactory(object):
             case TimeHorizons.DAILY:
                 result = ATimeHorizon(name="date"
                                       ,naming_convention="date"
-                                      ,y_column="adjclose"
+                                      ,y_column="adjopen"
                                       ,y_pivot_number=1
                                       ,model_offset=4
                                       ,rolling=5
@@ -20,7 +20,7 @@ class TimeHorizonFactory(object):
             case TimeHorizons.WEEKLY:
                 result = ATimeHorizon(name="week"
                                       ,naming_convention="week"
-                                      ,y_column="adjclose"
+                                      ,y_column="adjopen"
                                       ,y_pivot_number=1
                                       ,model_offset=4
                                       ,rolling=25
@@ -31,7 +31,7 @@ class TimeHorizonFactory(object):
             # case TimeHorizons.MONTHLY:
             #     result = ATimeHorizon(name="month"
             #                           ,naming_convention="month"
-            #                           ,y_column="adjclose"
+            #                           ,y_column="adjopen"
             #                           ,y_pivot_number=1
             #                           ,model_offset=4
             #                           ,rolling=100
@@ -42,7 +42,7 @@ class TimeHorizonFactory(object):
             case TimeHorizons.QUARTERLY:
                 result = ATimeHorizon(name="quarter"
                                       ,naming_convention="quarter"
-                                      ,y_column="adjclose"
+                                      ,y_column="adjopen"
                                       ,y_pivot_number=1
                                       ,model_offset=4
                                       ,rolling=260
@@ -53,7 +53,7 @@ class TimeHorizonFactory(object):
             # case TimeHorizons.YEARLY:
             #     result = ATimeHorizon(name="year"
             #                           ,naming_convention="year"
-            #                           ,y_column="adjclose"
+            #                           ,y_column="adjopen"
             #                           ,y_pivot_number=1
             #                           ,model_offset=4
             #                           ,rolling=1300

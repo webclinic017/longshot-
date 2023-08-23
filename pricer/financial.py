@@ -27,8 +27,8 @@
 #                             'weightedaveragenumberofsharesoutstandingbasic',
 #                             'stockholdersequity'
 #                         ]
-#         self.included_columns = ["year","quarter","ticker","adjclose","y"]
-#         self.included_live_columns = ["year","quarter","ticker","adjclose","y"]
+#         self.included_columns = ["year","quarter","ticker","adjopen","y"]
+#         self.included_live_columns = ["year","quarter","ticker","adjopen","y"]
 #         self.all_columns = self.factors + self.included_columns
 #         self.positions = 20
         
@@ -36,12 +36,12 @@
 #         filing = filing.groupby(["year","quarter"]).mean().reset_index()
 #         ticker_data = prices.copy()
 #         ticker_data.sort_values("date",ascending=True,inplace=True)
-#         ticker_data["adjclose"] = [float(x) for x in ticker_data["adjclose"]]
+#         ticker_data["adjopen"] = [float(x) for x in ticker_data["adjopen"]]
 #         ticker_data = ticker_data.groupby(["year","quarter"]).mean().reset_index()
 #         ticker_data.dropna(inplace=True)
 #         ticker_data["ticker"] = ticker
 #         if not current:
-#             ticker_data["y"] = ticker_data["adjclose"].shift(-4)
+#             ticker_data["y"] = ticker_data["adjopen"].shift(-4)
 #             columns = self.all_columns
 #         else:
 #             columns = self.all_columns[:-1]
@@ -62,8 +62,8 @@
 #             self.sec.disconnect()  
 #             financials = filing.groupby(["year","quarter"]).mean().reset_index()
 #             ticker_sim = prices.copy()
-#             quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjclose":"first"}).reset_index().rename(columns={"adjclose":"quarter_start"})
-#             end_quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjclose":"last"}).reset_index().rename(columns={"adjclose":"quarter_end"})
+#             quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjopen":"first"}).reset_index().rename(columns={"adjopen":"quarter_start"})
+#             end_quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjopen":"last"}).reset_index().rename(columns={"adjopen":"quarter_end"})
 #             quarterlies = quarterlies.merge(end_quarterlies[["year","quarter","quarter_end"]],on=["year","quarter"],how="left")
 #             quarterlies["return_end"] = (quarterlies["quarter_end"] - quarterlies["quarter_start"]) / quarterlies["quarter_start"]
 #             quarterlies = quarterlies.sort_values(["year","quarter"])
@@ -93,8 +93,8 @@
 #             self.sec.disconnect()  
 #             financials = filing.groupby(["year","quarter"]).mean().reset_index()
 #             ticker_sim = prices.copy()
-#             quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjclose":"first"}).reset_index().rename(columns={"adjclose":"quarter_start"})
-#             end_quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjclose":"last"}).reset_index().rename(columns={"adjclose":"quarter_end"})
+#             quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjopen":"first"}).reset_index().rename(columns={"adjopen":"quarter_start"})
+#             end_quarterlies = ticker_sim.groupby(["year","quarter","ticker"]).agg({"adjopen":"last"}).reset_index().rename(columns={"adjopen":"quarter_end"})
 #             quarterlies = quarterlies.merge(end_quarterlies[["year","quarter","quarter_end"]],on=["year","quarter"],how="left")
 #             quarterlies["return_end"] = (quarterlies["quarter_end"] - quarterlies["quarter_start"]) / quarterlies["quarter_start"]
 #             quarterlies = quarterlies.sort_values(["year","quarter"])

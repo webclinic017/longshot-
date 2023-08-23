@@ -9,5 +9,5 @@ class Window(ANonAIDataProduct):
         self.naming_suffix = "window_price"
     
     def training_set_helper(self,ticker_data,current):
-        ticker_data[f"price"] = ticker_data["adjclose"].shift(self.time_horizon_class.window)
+        ticker_data[f"price"] = ticker_data["adjopen"].shift(self.time_horizon_class.window)
         return ticker_data
