@@ -3,7 +3,8 @@ from alpaca_api.alpaca_api import AlpacaApi
 from time import sleep
 from datetime import datetime
 alp = AlpacaApi()
-
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 try:
     print("closing")
     alp.live_close_all()

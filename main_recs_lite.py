@@ -4,7 +4,8 @@ from lite.backtester_lite import Backtester
 from lite.transformer_lite import Transformer
 from alpaca_api.alpaca_api import AlpacaApi
 from tqdm import tqdm
-
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 alp = AlpacaApi()
 parameter = pd.read_csv("./parameter.csv").to_dict("records")[0]
 sp100 = pd.read_html("https://en.wikipedia.org/wiki/S%26P_100",attrs={"id":"constituents"})[0]
