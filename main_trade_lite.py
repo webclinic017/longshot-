@@ -8,7 +8,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 try:
     print("closing")
     alp.live_close_all()
-    sleep(300)
+    sleep(120)
 except Exception as e:
     print("close",str(e))
 
