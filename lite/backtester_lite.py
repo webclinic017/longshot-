@@ -14,8 +14,6 @@ class Backtester(object):
         
         iteration_sim["signal"] = (iteration_sim[f"{strategy}_{lookback}"] - iteration_sim["prev_open"]) / iteration_sim["prev_open"]
         
-        iteration_sim = iteration_sim[iteration_sim["day"]<4]
-        
         if not value:
             iteration_sim["signal"] = iteration_sim["signal"] * -1
 
@@ -25,6 +23,7 @@ class Backtester(object):
         additional_columns = ["signal"]
         
         if not current:
+            iteration_sim = iteration_sim[iteration_sim["day"]<4]
             additional_columns.append("return")
         
         trades = iteration_sim.sort_values(["date","signal"]).groupby("date").nth([-1-i for i in range(positions)]).reset_index()[["date","ticker"]+additional_columns]
